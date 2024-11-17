@@ -1,7 +1,9 @@
-// Import necessary modules from your framework
 import { Store } from '../../src/core/state.js';
 import { createElement, render } from '../../src/core/dom.js';
 import * as Events from '../../src/core/events.js';
+import { Header } from './components/Header.js';
+import { TodoList } from './components/TodoList.js';
+import { localStorageMiddleware } from './store/middleware.js';
 
 // Constants
 const STORAGE_KEY = 'todos-miniframework';
@@ -162,9 +164,9 @@ function getFilteredTodos(todos, filter) {
 
 function setFilter(filter) {
   store.setState({ filter, lastChangedProp: 'filter' });
-  // Update URL without page reload
   window.history.pushState(null, '', `#/${filter === 'all' ? '' : filter}`);
   updateFilterUI(filter);
+  renderApp(store.getState());
 }
 function updateFilterUI(currentFilter) {
   // Remove selected class from all filter links
@@ -182,71 +184,32 @@ function updateFilterUI(currentFilter) {
 // Render function
 function renderApp(state) {
   const filteredTodos = getFilteredTodos(state.todos, state.filter);
-  
-  // Create main section only once
-  const mainSection = state.todos.length > 0 ? 
-    createElement('section', { class: 'main' }, [
+  const appContent = createElement('div', { class: 'todoapp' }, [
+    new Header({ onNewTodo: addTodo }).render(),
+    state.todos.length > 0 ? createElement('section', { class: 'main' }, [
       createElement('input', {
         id: 'toggle-all',
         class: 'toggle-all',
         type: 'checkbox',
-        checked: state.todos.every(todo => todo.completed)
+        checked: filteredTodos.every(todo => todo.completed)
       }, []),
       createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
-      createElement('ul', { class: 'todo-list' }, 
-        // Use filteredTodos instead of state.todos for rendering
-        filteredTodos.map(todo => 
-          createElement('li', {
-            class: `${todo.completed ? 'completed' : ''} ${todo.editing ? 'editing' : ''}`,
-            'data-id': todo.id
-          }, [
-            createElement('div', { class: 'view' }, [
-              createElement('input', {
-                class: 'toggle',
-                type: 'checkbox',
-                checked: todo.completed
-              }, []),
-              createElement('label', {}, [todo.title]),
-              createElement('button', { class: 'destroy' }, [])
-            ]),
-            createElement('input', {
-              class: 'edit',
-              value: todo.title,
-              'data-original-value': todo.title
-            }, [])
-          ])
-        )
-      )
-    ]) : null;
+      new TodoList({
+        todos: filteredTodos,
+        onToggle: toggleTodoCompletion,
+        onDelete: deleteTodo,
+        onEdit: (id) => {
+          const todos = state.todos.map(todo =>
+            todo.id === id ? { ...todo, editing: true } : todo
+          );
+          store.setState({ todos, lastChangedProp: 'todos' });
+        }
+      }).render()
+    ]) : null
+  ]);
 
-  const footer = state.todos.length > 0 ? 
-    createElement('footer', { class: 'footer' }, [
-      createElement('span', { class: 'todo-count' }, [
-        createElement('strong', {}, [
-          state.todos.filter(todo => !todo.completed).length.toString()
-        ]),
-        ' items left'
-      ]),
-      state.todos.some(todo => todo.completed) ?
-        createElement('button', {
-          class: 'clear-completed'
-        }, ['Clear completed']) : null
-    ]) : null;
-
-  const app = createElement('div', {}, [
-    createElement('header', { class: 'header' }, [
-      createElement('h1', {}, ['todos']),
-      createElement('input', {
-        class: 'new-todo',
-        placeholder: 'What needs to be done?',
-        autofocus: true
-      }, [])
-    ]),
-    mainSection, // Only include mainSection once
-    footer
-  ].filter(Boolean));
-
-  render(app, document.getElementById('app'));
+  const appContainer = document.getElementById('app');
+  render(appContent, appContainer);
 }
 
 // Initialize the application
@@ -259,7 +222,9 @@ function initApp() {
     todos: savedTodos,
     filter: initialFilter,
     lastChangedProp: null
-  });
+  }, [
+    localStorageMiddleware(STORAGE_KEY)
+  ]);
 
   // Setup event handlers first
   setupEventHandlers();
@@ -279,6 +244,7 @@ function initApp() {
   window.addEventListener('hashchange', () => {
     const route = location.hash.replace('#/', '') || 'all';
     store.setState({ filter: route, lastChangedProp: 'filter' });
+    renderApp(store.getState());
   });
 
   // Initial render

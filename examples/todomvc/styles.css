@@ -488,8 +488,10 @@ body {
 
 .main-content {
   flex: 1;
-  margin-left: 250px; /* Width of sidebar */
+  margin-left: 250px;
   padding: 2rem;
+  width: 100%;
+  min-height: calc(100vh - 64px);
 }
 
 /* Update existing filters styles */
@@ -548,4 +550,19 @@ body {
   .todoapp {
     margin-top: 1rem;
   }
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.todoapp {
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
