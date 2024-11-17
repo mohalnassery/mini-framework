@@ -36,7 +36,10 @@ export function createElement(tag, attrs = {}, children = []) {
 }
 
 export function render(newVdom, container) {
-  // Store the current DOM state for future diffs
+  if (!container) {
+    console.error('Invalid container element');
+    return;
+  }
   const oldVdom = container._vdom || null;
   const patches = diff(oldVdom, newVdom);
   applyPatches(container, patches);
@@ -152,7 +155,13 @@ function diffChildren(oldChildren, newChildren) {
 }
 
 function applyPatches(parent, patches, index = 0) {
-  if (!patches) return;
+  if (!patches || !parent) return;
+
+  // Get the target node, accounting for text nodes
+  const getTargetNode = (parent, index) => {
+    const children = Array.from(parent.childNodes);
+    return children[index];
+  };
 
   switch (patches.type) {
     case PATCH_TYPES.CREATE: {
@@ -161,17 +170,25 @@ function applyPatches(parent, patches, index = 0) {
       break;
     }
     case PATCH_TYPES.REMOVE: {
-      parent.removeChild(parent.childNodes[index]);
+      const node = getTargetNode(parent, index);
+      if (node) {
+        parent.removeChild(node);
+      }
       break;
     }
     case PATCH_TYPES.REPLACE: {
-      const oldNode = parent.childNodes[index];
+      const oldNode = getTargetNode(parent, index);
       const newNode = _renderElement(patches.vdom);
-      parent.replaceChild(newNode, oldNode);
+      if (oldNode) {
+        parent.replaceChild(newNode, oldNode);
+      } else {
+        parent.appendChild(newNode);
+      }
       break;
     }
     case PATCH_TYPES.UPDATE_ATTRS: {
-      const element = parent.childNodes[index];
+      const element = getTargetNode(parent, index);
+      if (!element) return;
       
       // Update attributes
       if (patches.attrs) {
@@ -187,13 +204,15 @@ function applyPatches(parent, patches, index = 0) {
       }
 
       // Update children
-      if (patches.children) {
+      if (patches.children && element.nodeType === Node.ELEMENT_NODE) {
         // Handle moves first
         if (patches.children.moves) {
           patches.children.moves.forEach(({ from, to }) => {
             const fromNode = element.childNodes[from];
             const referenceNode = element.childNodes[to];
-            element.insertBefore(fromNode, referenceNode);
+            if (fromNode && referenceNode) {
+              element.insertBefore(fromNode, referenceNode);
+            }
           });
         }
 
@@ -207,8 +226,10 @@ function applyPatches(parent, patches, index = 0) {
       break;
     }
     case PATCH_TYPES.UPDATE_TEXT: {
-      const textNode = parent.childNodes[index];
-      textNode.nodeValue = patches.value;
+      const textNode = getTargetNode(parent, index);
+      if (textNode) {
+        textNode.nodeValue = patches.value;
+      }
       break;
     }
   }

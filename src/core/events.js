@@ -1,17 +1,19 @@
 // events.js
-// Store event listeners in a WeakMap to prevent memory leaks
-const listeners = new WeakMap();
+// Store event listeners in a WeakMap to avoid memory leaks
+const eventListeners = new WeakMap();
 
 // Helper function to get or create listener array for a specific event type
 function getListeners(eventType) {
-  if (!listeners.has(document)) {
-    listeners.set(document, new Map());
+  if (!eventListeners.has(document)) {
+    eventListeners.set(document, new Map());
   }
-  const eventMap = listeners.get(document);
-  if (!eventMap.has(eventType)) {
-    eventMap.set(eventType, new Map());
+  const documentListeners = eventListeners.get(document);
+  
+  if (!documentListeners.has(eventType)) {
+    documentListeners.set(eventType, new Map());
   }
-  return eventMap.get(eventType);
+  
+  return documentListeners.get(eventType);
 }
 
 class EventError extends Error {
@@ -35,24 +37,21 @@ export function on(eventType, selector, handler) {
 
     const eventListeners = getListeners(eventType);
     
-    // Create wrapper function for event delegation
-    const wrappedHandler = function(event) {
-      const target = event.target;
-      const matchingElement = target.matches(selector) ? target : target.closest(selector);
-      
+    // Create a wrapped handler that checks the selector
+    const wrappedHandler = (event) => {
+      const matchingElement = event.target.closest(selector);
       if (matchingElement) {
         handler.call(matchingElement, event);
       }
     };
-
-    // Store reference to wrapped handler
-    if (!eventListeners.has(handler)) {
-      eventListeners.set(handler, {
-        selector,
-        wrappedHandler
-      });
-    }
-
+    
+    // Store the handler info for potential removal later
+    eventListeners.set(handler, {
+      selector,
+      wrappedHandler
+    });
+    
+    // Add the event listener
     document.addEventListener(eventType, wrappedHandler, true);
   } catch (error) {
     console.error('Error in on:', error);

@@ -30,65 +30,31 @@ class StateError extends Error {
 
 export class Store {
   constructor(initialState = {}) {
-    if (typeof initialState !== 'object') {
-      throw new StateError('Initial state must be an object');
-    }
     this.state = initialState;
-    this.listeners = new Map();
+    this.listeners = new Set();
   }
 
   getState() {
-    return { ...this.state };
+    return this.state;
   }
 
   setState(newState) {
-    try {
-      if (typeof newState !== 'object') {
-        throw new StateError('New state must be an object');
-      }
-      
-      const prevState = this.state;
-      this.state = { ...this.state, ...newState };
-      
-      if (!deepEqual(prevState, this.state)) {
-        this.notify(prevState);
-      }
-    } catch (error) {
-      console.error('Error in setState:', error);
-      throw error;
-    }
-  }
-
-  subscribe(listener, path = null) {
-    try {
-      if (typeof listener !== 'function') {
-        throw new StateError('Listener must be a function');
-      }
-      if (path !== null && typeof path !== 'string') {
-        throw new StateError('Path must be a string or null');
-      }
-      
-      const id = Symbol();
-      this.listeners.set(id, { listener, path });
-      return () => this.listeners.delete(id);
-    } catch (error) {
-      console.error('Error in subscribe:', error);
-      throw error;
-    }
-  }
-
-  notify(prevState) {
-    this.listeners.forEach(({ listener, path }) => {
-      if (path) {
-        const oldValue = getByPath(prevState, path);
-        const newValue = getByPath(this.state, path);
-        
-        if (!deepEqual(oldValue, newValue)) {
-          listener(this.getState(), path);
-        }
-      } else {
-        listener(this.getState());
-      }
+    const prevState = this.state;
+    this.state = { ...this.state, ...newState };
+    
+    // Immediately notify all listeners of the state change
+    this.listeners.forEach(listener => {
+      listener(this.state, prevState);
     });
+  }
+
+  subscribe(listener) {
+    if (typeof listener !== 'function') {
+      throw new StateError('Listener must be a function');
+    }
+    
+    this.listeners.add(listener);
+    // Return unsubscribe function
+    return () => this.listeners.delete(listener);
   }
 }

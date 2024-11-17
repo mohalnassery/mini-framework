@@ -1,198 +1,314 @@
-// app.js
-import { DOM, Store, Events } from '../../src/index.js';
+// Import necessary modules from your framework
+import { Store } from '../../src/core/state.js';
+import { createElement, render } from '../../src/core/dom.js';
+import * as Events from '../../src/core/events.js';
 
-const { createElement, render } = DOM;
-
+// Constants
 const STORAGE_KEY = 'todos-miniframework';
 
-const initialState = {
-  todos: JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'),
-  filter: 'all',
-};
+// Initialize store
+let store;
 
-const store = new Store(initialState);
+// Event handlers
+function setupEventHandlers() {
+  // No need to remove event listeners since we're using event delegation
+  // and the handlers are stored in a WeakMap
 
-store.subscribe(state => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.todos));
-  renderApp(state);
-});
-function renderApp(state) {
-  const app = document.getElementById('app');
-
-  const visibleTodos = state.todos.filter(todo => {
-    if (state.filter === 'all') return true;
-    if (state.filter === 'active') return !todo.completed;
-    if (state.filter === 'completed') return todo.completed;
+  // Add new todo
+  Events.on('keypress', '.new-todo', function(event) {
+    if (event.key === 'Enter' && event.target.value.trim()) {
+      event.preventDefault();
+      const title = event.target.value.trim();
+      addTodo(title);
+      event.target.value = '';
+    }
   });
 
-  const todoItems = visibleTodos.map(todo =>
-    createElement('li', { 'data-id': todo.id, class: todo.completed ? 'completed' : '' }, [
-      createElement('div', { class: 'view' }, [
-        createElement('input', { class: 'toggle', type: 'checkbox', checked: todo.completed }, []),
-        createElement('label', {}, [todo.title]),
-        createElement('button', { class: 'destroy' }, [])
-      ]),
-      createElement('input', { class: 'edit', value: todo.title }, [])
-    ])
-  );
+  // Toggle todo completion
+  Events.on('click', '.toggle', function(event) {
+    const li = event.target.closest('li');
+    toggleTodoCompletion(li.dataset.id);
+  });
 
-  const mainSection = createElement('section', { class: 'main' }, [
-    createElement('input', { id: 'toggle-all', class: 'toggle-all', type: 'checkbox' }, []),
-    createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
-    createElement('ul', { class: 'todo-list' }, todoItems)
-  ]);
+  // Delete todo
+  Events.on('click', '.destroy', function(event) {
+    const li = event.target.closest('li');
+    deleteTodo(li.dataset.id);
+  });
 
-  const footerSection = createElement('footer', { class: 'footer' }, [
-    createElement('span', { class: 'todo-count' }, [
-      createElement('strong', {}, [state.todos.filter(todo => !todo.completed).length]),
-      ' items left'
-    ]),
-    createElement('ul', { class: 'filters' }, [
-      createElement('li', {}, [
-        createElement('a', { href: '#/', class: state.filter === 'all' ? 'selected' : '' }, ['All'])
-      ]),
-      createElement('li', {}, [
-        createElement('a', { href: '#/active', class: state.filter === 'active' ? 'selected' : '' }, ['Active'])
-      ]),
-      createElement('li', {}, [
-        createElement('a', { href: '#/completed', class: state.filter === 'completed' ? 'selected' : '' }, ['Completed'])
-      ])
-    ]),
-    state.todos.some(todo => todo.completed) ? createElement('button', { class: 'clear-completed' }, ['Clear completed']) : null
-  ]);
+  // Toggle all
+  Events.on('click', '#toggle-all', function(event) {
+    const checked = event.target.checked;
+    toggleAll(checked);
+  });
 
-  const headerSection = createElement('header', { class: 'header' }, [
-    createElement('h1', {}, ['todos']),
-    createElement('input', {
-      class: 'new-todo',
-      placeholder: 'What needs to be done?',
-      autofocus: true,
-      type: 'text'
-    }, [])
-  ]);
+  // Clear completed
+  Events.on('click', '.clear-completed', function() {
+    clearCompletedTodos();
+  });
 
-  const appChildren = [headerSection];
+  // Edit todo on double click
+  Events.on('dblclick', '.todo-list label', function(event) {
+    const li = event.target.closest('li');
+    const id = li.dataset.id;
+    const input = li.querySelector('.edit');
+    
+    // Update the editing state in the store
+    const todos = store.getState().todos.map(todo =>
+      todo.id === id ? { ...todo, editing: true } : todo
+    );
+    store.setState({ todos, lastChangedProp: 'todos' });
+    
+    // Focus the input and move cursor to end
+    input.focus();
+    input.value = input.value;
+    input.dataset.originalValue = input.value;
+  });
 
-  if (state.todos.length > 0) {
-    appChildren.push(mainSection, footerSection);
-  }
+  // Handle edit completion
+  Events.on('blur', '.edit', finishEditing);
+  Events.on('keydown', '.edit', function(event) {
+    if (event.key === 'Enter') {
+      event.target.blur();
+    } else if (event.key === 'Escape') {
+      const li = event.target.closest('li');
+      const id = li.dataset.id;
+      const input = event.target;
+      
+      // Restore original value and remove editing state in store
+      input.value = input.dataset.originalValue;
+      const todos = store.getState().todos.map(todo =>
+        todo.id === id ? { ...todo, editing: false } : todo
+      );
+      store.setState({ todos, lastChangedProp: 'todos' });
+    }
+  });
 
-  const appElement = createElement('section', { class: 'todoapp' }, appChildren);
-
-  render(appElement, app);
+  // Filter clicks
+  Events.on('click', '.filters a', function(event) {
+    event.preventDefault();
+    const filter = event.target.getAttribute('href').replace('#/', '') || 'all';
+    setFilter(filter);
+  });
 }
-
-// Event Handlers
-Events.on('keypress', '.new-todo', function(event) {
-  if (event.key === 'Enter' && event.target.value.trim()) {
-    addTodo(event.target.value.trim());
-    event.target.value = '';
-  }
-});
-
-Events.on('click', '.toggle', function(event) {
-  const id = event.target.closest('li').getAttribute('data-id');
-  toggleTodoCompletion(id);
-});
-
-Events.on('click', '.destroy', function(event) {
-  const id = event.target.closest('li').getAttribute('data-id');
-  deleteTodo(id);
-});
-
-Events.on('click', '.clear-completed', function() {
-  clearCompletedTodos();
-});
-
-Events.on('click', '.filters a', function(event) {
-  event.preventDefault();
-  const filter = event.target.getAttribute('href').replace('#/', '') || 'all';
-  setFilter(filter);
-});
-
-Events.on('dblclick', '.view label', function(event) {
-  const li = event.target.closest('li');
-  li.classList.add('editing');
-  const editInput = li.querySelector('.edit');
-  editInput.focus();
-});
-
-Events.on('keypress', '.edit', function(event) {
-  if (event.key === 'Enter') {
-    finishEditing(event);
-  }
-});
-
-Events.on('blur', '.edit', function(event) {
-  finishEditing(event);
-});
-
-Events.on('click', '#toggle-all', function(event) {
-  const isChecked = event.target.checked;
-  const todos = store.getState().todos.map(todo => ({
-    ...todo,
-    completed: isChecked
-  }));
-  store.setState({ todos });
-});
 
 // State manipulation functions
 function addTodo(title) {
+  const currentState = store.getState();
   const newTodo = {
     id: Date.now().toString(),
     title,
     completed: false,
+    editing: false
   };
-  const todos = [...store.getState().todos, newTodo];
-  store.setState({ todos });
+  const todos = [...currentState.todos, newTodo];
+  store.setState({ todos, lastChangedProp: 'todos' });
+  renderApp(store.getState());
 }
-
 function toggleTodoCompletion(id) {
   const todos = store.getState().todos.map(todo =>
     todo.id === id ? { ...todo, completed: !todo.completed } : todo
   );
-  store.setState({ todos });
+  store.setState({ todos, lastChangedProp: 'todos' });
+  renderApp(store.getState());
 }
 
 function deleteTodo(id) {
   const todos = store.getState().todos.filter(todo => todo.id !== id);
-  store.setState({ todos });
+  store.setState({ todos, lastChangedProp: 'todos' });
+  renderApp(store.getState());
 }
 
 function clearCompletedTodos() {
   const todos = store.getState().todos.filter(todo => !todo.completed);
-  store.setState({ todos });
+  store.setState({ todos, lastChangedProp: 'todos' });
 }
 
-function setFilter(filter) {
-  store.setState({ filter });
+function toggleAll(checked) {
+  const todos = store.getState().todos.map(todo => ({
+    ...todo,
+    completed: checked
+  }));
+  store.setState({ todos, lastChangedProp: 'todos' });
 }
 
 function finishEditing(event) {
-  const li = event.target.closest('li');
-  const id = li.getAttribute('data-id');
-  const title = event.target.value.trim();
-  if (title) {
+  const input = event.target;
+  const li = input.closest('li');
+  const id = li.dataset.id;
+  const newTitle = input.value.trim();
+
+  if (newTitle) {
     const todos = store.getState().todos.map(todo =>
-      todo.id === id ? { ...todo, title } : todo
+      todo.id === id ? { ...todo, title: newTitle, editing: false } : todo
     );
-    store.setState({ todos });
-    li.classList.remove('editing');
+    store.setState({ todos, lastChangedProp: 'todos' });
   } else {
     deleteTodo(id);
   }
 }
 
+// Filter functions
+function getFilteredTodos(todos, filter) {
+  switch (filter) {
+    case 'active':
+      return todos.filter(todo => !todo.completed);
+    case 'completed':
+      return todos.filter(todo => todo.completed);
+    default:
+      return todos;
+  }
+}
+
+function setFilter(filter) {
+  store.setState({ filter, lastChangedProp: 'filter' });
+  // Update URL without page reload
+  window.history.pushState(null, '', `#/${filter === 'all' ? '' : filter}`);
+  updateFilterUI(filter);
+}
+function updateFilterUI(currentFilter) {
+  // Remove selected class from all filter links
+  document.querySelectorAll('.filters a').forEach(link => {
+    link.classList.remove('selected');
+  });
+  
+  // Add selected class to current filter link
+  const filterLink = document.querySelector(`.filters a[href="#/${currentFilter === 'all' ? '' : currentFilter}"]`);
+  if (filterLink) {
+    filterLink.classList.add('selected');
+  }
+}
+
+// Render function
+function renderApp(state) {
+  const filteredTodos = getFilteredTodos(state.todos, state.filter);
+  
+  // Create main section only once
+  const mainSection = state.todos.length > 0 ? 
+    createElement('section', { class: 'main' }, [
+      createElement('input', {
+        id: 'toggle-all',
+        class: 'toggle-all',
+        type: 'checkbox',
+        checked: state.todos.every(todo => todo.completed)
+      }, []),
+      createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
+      createElement('ul', { class: 'todo-list' }, 
+        // Use filteredTodos instead of state.todos for rendering
+        filteredTodos.map(todo => 
+          createElement('li', {
+            class: `${todo.completed ? 'completed' : ''} ${todo.editing ? 'editing' : ''}`,
+            'data-id': todo.id
+          }, [
+            createElement('div', { class: 'view' }, [
+              createElement('input', {
+                class: 'toggle',
+                type: 'checkbox',
+                checked: todo.completed
+              }, []),
+              createElement('label', {}, [todo.title]),
+              createElement('button', { class: 'destroy' }, [])
+            ]),
+            createElement('input', {
+              class: 'edit',
+              value: todo.title,
+              'data-original-value': todo.title
+            }, [])
+          ])
+        )
+      )
+    ]) : null;
+
+  const footer = state.todos.length > 0 ? 
+    createElement('footer', { class: 'footer' }, [
+      createElement('span', { class: 'todo-count' }, [
+        createElement('strong', {}, [
+          state.todos.filter(todo => !todo.completed).length.toString()
+        ]),
+        ' items left'
+      ]),
+      state.todos.some(todo => todo.completed) ?
+        createElement('button', {
+          class: 'clear-completed'
+        }, ['Clear completed']) : null
+    ]) : null;
+
+  const app = createElement('div', {}, [
+    createElement('header', { class: 'header' }, [
+      createElement('h1', {}, ['todos']),
+      createElement('input', {
+        class: 'new-todo',
+        placeholder: 'What needs to be done?',
+        autofocus: true
+      }, [])
+    ]),
+    mainSection, // Only include mainSection once
+    footer
+  ].filter(Boolean));
+
+  render(app, document.getElementById('app'));
+}
+
 // Initialize the application
-window.addEventListener('load', () => {
-  const filter = location.hash.replace('#/', '') || 'all';
-  setFilter(filter);
-});
+function initApp() {
+  const savedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const initialFilter = location.hash.replace('#/', '') || 'all';
+  
+  // Create the store
+  store = new Store({
+    todos: savedTodos,
+    filter: initialFilter,
+    lastChangedProp: null
+  });
 
-window.addEventListener('hashchange', () => {
-  const filter = location.hash.replace('#/', '') || 'all';
-  setFilter(filter);
-});
+  // Setup event handlers first
+  setupEventHandlers();
 
-renderApp(store.getState());
+  // Modify subscription to use requestAnimationFrame properly
+  store.subscribe((state) => {
+    if (state.lastChangedProp === 'todos') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.todos));
+    }
+    // Use requestAnimationFrame for smooth rendering
+    window.requestAnimationFrame(() => {
+      renderApp(state);
+    });
+  });
+
+  // Setup routing
+  window.addEventListener('hashchange', () => {
+    const route = location.hash.replace('#/', '') || 'all';
+    store.setState({ filter: route, lastChangedProp: 'filter' });
+  });
+
+  // Initial render
+  renderApp(store.getState());
+
+  setupThemeToggle();
+}
+
+function setupThemeToggle() {
+  const themeToggle = document.querySelector('.theme-toggle');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+  
+  // Set initial theme
+  document.documentElement.setAttribute('data-theme', 
+    localStorage.getItem('theme') || (prefersDark.matches ? 'dark' : 'light')
+  );
+
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+}
+
+// Start the app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 

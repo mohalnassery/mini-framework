@@ -1,0 +1,9 @@
+{
+  "name": "TodoMVC App",
+  "short_name": "TodoMVC",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "icons": []
+} 
