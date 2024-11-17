@@ -118,16 +118,3 @@ You will also have to implement a way to handle the events triggered by the user
 
 A todoMVC project consists of creating a [webpage](https://todomvc.com/examples/react/dist/) (this example is written in React) with the same elements present in the example, so we advise you to test it around first. You have to make your todoMVC project, a functional copy of the examples given in the links above, but using your framework.\
 Be aware that every thing that we can't visually see has to be present too (IDs, classes, etc.).
-
-This project will help you learn about:
-
-- Web Development
-  - JS
-  - HTML
-  - CSS
-- Frameworks
-- Documentation
-- DOM
-- Routing
-- State of an Application
-- Event Handling

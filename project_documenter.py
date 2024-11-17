@@ -26,7 +26,7 @@ def generate_project_documentation(output_file="project_documentation.txt"):
                 # Skip the output file itself and common binary/unwanted files
                 if (file == os.path.basename(output_file) or
                     file.endswith(('.pyc', '.pyo', '.pyd', '.so', '.dll', '.exe', 
-                                 '.git', '.idea', '__pycache__'))):
+                                 '.git', '.idea', '__pycache__', '.css', '.md'))):
                     continue
                 
                 try:
