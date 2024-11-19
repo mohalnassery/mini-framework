@@ -7,7 +7,8 @@ export class Todo extends Component {
     
     return createElement('li', {
       class: `${todo.completed ? 'completed' : ''} ${todo.editing ? 'editing' : ''}`,
-      'data-id': todo.id
+      'data-id': todo.id,
+      key: todo.id
     }, [
       createElement('div', { class: 'view' }, [
         createElement('input', {

@@ -90,6 +90,7 @@ body {
 }
 
 /* Animations */
+/*
 @keyframes scaleIn {
   from {
     transform: scale(0.95);
@@ -118,7 +119,7 @@ body {
     opacity: 0;
   }
 }
-
+*/
 /* Header */
 .todoapp h1 {
   font-size: 2.5rem;

@@ -7,7 +7,13 @@ export class TodoList extends Component {
     const { todos, onToggle, onDelete, onEdit } = this.props;
     return createElement('ul', { class: 'todo-list' },
       todos.map(todo => {
-        const todoComponent = new Todo({ todo, onToggle, onDelete, onEdit });
+        const todoComponent = new Todo({ 
+          todo, 
+          onToggle, 
+          onDelete, 
+          onEdit,
+          key: todo.id
+        });
         return todoComponent.render();
       })
     );

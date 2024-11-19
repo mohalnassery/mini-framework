@@ -112,7 +112,7 @@ function toggleTodoCompletion(id) {
     todo.id === id ? { ...todo, completed: !todo.completed } : todo
   );
   store.setState({ todos, lastChangedProp: 'todos' });
-  renderApp(store.getState());
+
 }
 
 function deleteTodo(id) {
@@ -152,6 +152,7 @@ function finishEditing(event) {
 
 // Filter functions
 function getFilteredTodos(todos, filter) {
+  console.log('Filtering todos:', todos, 'with filter:', filter);
   switch (filter) {
     case 'active':
       return todos.filter(todo => !todo.completed);
@@ -184,6 +185,7 @@ function updateFilterUI(currentFilter) {
 // Render function
 function renderApp(state) {
   const filteredTodos = getFilteredTodos(state.todos, state.filter);
+  console.log(filteredTodos)
   const appContent = createElement('div', { class: 'todoapp' }, [
     new Header({ onNewTodo: addTodo }).render(),
     state.todos.length > 0 ? createElement('section', { class: 'main' }, [
@@ -229,6 +231,9 @@ function initApp() {
   // Setup event handlers first
   setupEventHandlers();
 
+  // Update UI to show correct filter tab
+  updateFilterUI(initialFilter);
+  
   // Modify subscription to use requestAnimationFrame properly
   store.subscribe((state) => {
     if (state.lastChangedProp === 'todos') {

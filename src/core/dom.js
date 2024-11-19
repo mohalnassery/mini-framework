@@ -43,6 +43,7 @@ export function render(newVdom, container) {
   const oldVdom = container._vdom || null;
   const patches = diff(oldVdom, newVdom);
   applyPatches(container, patches);
+
   container._vdom = newVdom;
 }
 
@@ -95,7 +96,13 @@ function diffAttrs(oldAttrs, newAttrs) {
 
   // Check for changed/new attributes
   for (const [key, value] of Object.entries(newAttrs)) {
-    if (oldAttrs[key] !== value) {
+    // Special handling for boolean attributes like 'checked'
+    if (key === 'checked' || key === 'selected' || key === 'disabled') {
+      if (!!oldAttrs[key] !== !!value) {
+        patches[key] = !!value;
+        hasChanges = true;
+      }
+    } else if (oldAttrs[key] !== value) {
       patches[key] = value;
       hasChanges = true;
     }
@@ -114,44 +121,30 @@ function diffAttrs(oldAttrs, newAttrs) {
 
 function diffChildren(oldChildren, newChildren) {
   const patches = [];
-  
-  // Create key maps for efficient diffing
-  const oldKeyMap = new Map();
-  const newKeyMap = new Map();
-  
-  oldChildren.forEach((child, i) => {
-    if (child && child.key) oldKeyMap.set(child.key, i);
-  });
-  newChildren.forEach((child, i) => {
-    if (child && child.key) newKeyMap.set(child.key, i);
-  });
 
-  // Handle keyed elements first
-  const moves = [];
-  const maxLength = Math.max(oldChildren.length, newChildren.length);
-  
-  for (let i = 0; i < maxLength; i++) {
-    const oldChild = oldChildren[i];
-    const newChild = newChildren[i];
+  newChildren.forEach((newChild, i) => {
+    const oldChild = oldChildren.find(child => 
+      child && child.key === newChild.key
+    );
     
-    if (oldChild && newChild && oldChild.key && newChild.key) {
-      if (oldChild.key !== newChild.key) {
-        const newPos = oldKeyMap.get(newChild.key);
-        if (newPos !== undefined) {
-          // Move existing element
-          moves.push({ from: newPos, to: i });
-          oldChildren[newPos] = null;
-        }
+    if (oldChild) {
+      const patch = diff(oldChild, newChild);
+      if (patch) {
+        patches[i] = patch;
       }
+    } else {
+      patches[i] = { type: PATCH_TYPES.CREATE, vdom: newChild };
     }
-    
-    const patch = diff(oldChild, newChild);
-    if (patch) {
-      patches[i] = patch;
-    }
-  }
+  });
 
-  return patches.length > 0 || moves.length > 0 ? { patches, moves } : null;
+  // Remove any children not in new list
+  oldChildren.forEach((oldChild, i) => {
+    if (oldChild && !newChildren.find(child => child.key === oldChild.key)) {
+      patches[i] = { type: PATCH_TYPES.REMOVE };
+    }
+  });
+
+  return patches.length > 0 ? { patches } : null;
 }
 
 function applyPatches(parent, patches, index = 0) {
@@ -195,6 +188,12 @@ function applyPatches(parent, patches, index = 0) {
         for (const [attr, value] of Object.entries(patches.attrs)) {
           if (value === null) {
             element.removeAttribute(attr);
+          } else if (attr === 'checked' || attr === 'selected' || attr === 'disabled') {
+            if (value) {
+              element.setAttribute(attr, '');
+            } else {
+              element.removeAttribute(attr);
+            }
           } else if (value === true) {
             element.setAttribute(attr, '');
           } else if (value !== false) {
@@ -253,7 +252,15 @@ function _renderElement(vdom) {
     // Set attributes
     for (const [attr, value] of Object.entries(attrs)) {
       if (value === false || value === null || value === undefined) continue;
-      if (value === true) {
+      
+      // Handle boolean attributes specially
+      if (attr === 'checked' || attr === 'selected' || attr === 'disabled') {
+        if (value) {
+          element.setAttribute(attr, '');
+        } else {
+          element.removeAttribute(attr);
+        }
+      } else if (value === true) {
         element.setAttribute(attr, '');
       } else {
         element.setAttribute(attr, value.toString());
