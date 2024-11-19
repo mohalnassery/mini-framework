@@ -11,15 +11,17 @@ export class Todo extends Component {
       key: todo.id
     }, [
       createElement('div', { class: 'view' }, [
-        createElement('input', {
-          class: 'toggle',
-          type: 'checkbox',
-          checked: todo.completed,
-          onChange: () => onToggle(todo.id)
-        }, []),
-        createElement('label', {
-          onDblClick: () => onEdit(todo.id)
-        }, [todo.title]),
+        createElement('div', { class: 'toggle-container' }, [
+          createElement('input', {
+            class: 'toggle',
+            type: 'checkbox',
+            checked: todo.completed,
+            onChange: () => onToggle(todo.id)
+          }, []),
+          createElement('label', {
+            onDblClick: () => onEdit(todo.id)
+          }, [todo.title]),
+        ]),
         createElement('button', {
           class: 'destroy',
           onClick: () => onDelete(todo.id)

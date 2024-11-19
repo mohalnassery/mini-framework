@@ -189,13 +189,15 @@ function renderApp(state) {
   const appContent = createElement('div', { class: 'todoapp' }, [
     new Header({ onNewTodo: addTodo }).render(),
     state.todos.length > 0 ? createElement('section', { class: 'main' }, [
-      createElement('input', {
-        id: 'toggle-all',
-        class: 'toggle-all',
-        type: 'checkbox',
-        checked: filteredTodos.every(todo => todo.completed)
-      }, []),
-      createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
+      createElement('div', { class: 'toggle-all-container' }, [
+        createElement('input', {
+          id: 'toggle-all',
+          class: 'toggle-all',
+          type: 'checkbox',
+          checked: filteredTodos.every(todo => todo.completed)
+        }, []),
+        createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
+      ]),
       new TodoList({
         todos: filteredTodos,
         onToggle: toggleTodoCompletion,
