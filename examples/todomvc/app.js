@@ -45,7 +45,7 @@ function setupEventHandlers() {
   });
 
   // Clear completed
-  Events.on('click', '.clear-completed', function() {
+  Events.on('click', '.clear-completed-btn', function() {
     clearCompletedTodos();
   });
 
@@ -122,8 +122,14 @@ function deleteTodo(id) {
 }
 
 function clearCompletedTodos() {
-  const todos = store.getState().todos.filter(todo => !todo.completed);
-  store.setState({ todos, lastChangedProp: 'todos' });
+  const currentState = store.getState();
+  const remainingTodos = currentState.todos.filter(todo => !todo.completed);
+  
+  // Update state with remaining todos
+  store.setState({ 
+    todos: remainingTodos,
+    lastChangedProp: 'todos'
+  });
 }
 
 function toggleAll(checked) {
@@ -185,19 +191,21 @@ function updateFilterUI(currentFilter) {
 // Render function
 function renderApp(state) {
   const filteredTodos = getFilteredTodos(state.todos, state.filter);
-  console.log(filteredTodos)
+  const remainingTasks = state.todos.filter(todo => !todo.completed).length;
+  const taskText = `${remainingTasks} ${remainingTasks === 1 || remainingTasks === 0 ? 'task' : 'tasks'} left`;
+
   const appContent = createElement('div', { class: 'todoapp' }, [
     new Header({ onNewTodo: addTodo }).render(),
-    state.todos.length > 0 ? createElement('section', { class: 'main' }, [
-      createElement('div', { class: 'toggle-all-container' }, [
-        createElement('input', {
-          id: 'toggle-all',
-          class: 'toggle-all',
-          type: 'checkbox',
-          checked: filteredTodos.every(todo => todo.completed)
-        }, []),
-        createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
+    state.todos.length > 0 && createElement('section', { class: 'main' }, [
+      // Create a container div for controls
+      createElement('div', { class: 'main-controls' }, [
+        // Clear completed button
+        createElement('button', {
+          class: 'clear-completed-btn',
+          style: state.todos.some(todo => todo.completed) ? 'display: inline-block' : 'display: none'
+        }, ['Clear completed'])
       ]),
+      // TodoList component
       new TodoList({
         todos: filteredTodos,
         onToggle: toggleTodoCompletion,
@@ -209,8 +217,26 @@ function renderApp(state) {
           store.setState({ todos, lastChangedProp: 'todos' });
         }
       }).render()
-    ]) : null
-  ]);
+    ]),
+    // Only show footer when there are todos
+    state.todos.length > 0 && createElement('footer', { class: 'footer' }, [
+      // Toggle all container
+      createElement('div', { class: 'toggle-all-container' }, [
+        createElement('input', {
+          id: 'toggle-all',
+          class: 'toggle-all',
+          type: 'checkbox',
+          checked: filteredTodos.every(todo => todo.completed)
+        }, []),
+        createElement('label', { for: 'toggle-all' }, ['Mark all as complete'])
+      ]),
+
+      // Tasks counter div
+      createElement('div', { class: 'todo-count' }, [
+        createElement('p', {}, [taskText])
+      ]),
+    ])
+  ].filter(Boolean)); // Filter out falsy values
 
   const appContainer = document.getElementById('app');
   render(appContent, appContainer);

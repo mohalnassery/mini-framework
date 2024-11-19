@@ -122,9 +122,16 @@ function diffAttrs(oldAttrs, newAttrs) {
 function diffChildren(oldChildren, newChildren) {
   const patches = [];
 
-  newChildren.forEach((newChild, i) => {
-    const oldChild = oldChildren.find(child => 
-      child && child.key === newChild.key
+  // Ensure we're working with arrays and filter out null/undefined
+  const safeOldChildren = (oldChildren || []).filter(child => child != null);
+  const safeNewChildren = (newChildren || []).filter(child => child != null);
+
+  safeNewChildren.forEach((newChild, i) => {
+    // Skip null children
+    if (!newChild) return;
+
+    const oldChild = safeOldChildren.find(child => 
+      child && child.key === (newChild && newChild.key)
     );
     
     if (oldChild) {
@@ -138,8 +145,8 @@ function diffChildren(oldChildren, newChildren) {
   });
 
   // Remove any children not in new list
-  oldChildren.forEach((oldChild, i) => {
-    if (oldChild && !newChildren.find(child => child.key === oldChild.key)) {
+  safeOldChildren.forEach((oldChild, i) => {
+    if (oldChild && !safeNewChildren.find(child => child && child.key === oldChild.key)) {
       patches[i] = { type: PATCH_TYPES.REMOVE };
     }
   });

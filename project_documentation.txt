@@ -1,0 +1,3925 @@
+Tree Structure:
+==============
+
+objectives.md
+package-lock.json
+read1.md
+package.json
+todo.md
+audit.md
+project_documentation.txt
+├── node_modules/
+│   ├── i/
+│   ├── README.md
+│   ├── LICENSE
+│   └── package.json
+│   │   ├── lib/
+│   │   ├── native.js
+│   │   ├── methods.js
+│   │   ├── inflections.js
+│   │   ├── defaults.js
+│   │   ├── inflect.js
+│   │   └── util.js
+│   │   ├── test/
+│   │   │   ├── utils/
+│   │   │   ├── string-test.js
+│   │   │   └── array-test.js
+│   │   │   ├── inflector/
+│   │   │   ├── methods-test.js
+│   │   │   ├── inflections-test.js
+│   │   │   └── cases.js
+├── examples/
+│   ├── todomvc/
+│   ├── manifest.json
+│   ├── app.js
+│   ├── styles.css
+│   └── index.html
+│   │   ├── components/
+│   │   ├── Todo.js
+│   │   ├── TodoList.js
+│   │   ├── Header.js
+│   │   └── Filters.js
+│   │   ├── store/
+│   │   └── middleware.js
+├── src/
+└── index.js
+│   ├── utils/
+│   └── helpers.js
+│   ├── core/
+│   ├── events.js
+│   ├── state.js
+│   ├── router.js
+│   ├── component.js
+│   └── dom.js
+├── docs/
+└── README.md
+
+
+File Contents:
+==============
+
+
+File: project_documenter.py
+===========================
+
+import os
+from pathlib import Path
+
+def generate_project_documentation(output_file="project_documentation.txt"):
+    # Get the current directory
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        # First, write the tree structure
+        f.write("Tree Structure:\n")
+        f.write("==============\n\n")
+        
+        # Generate and write tree
+        tree_content = generate_tree(current_dir)
+        f.write(tree_content)
+        
+        f.write("\n\nFile Contents:\n")
+        f.write("==============\n\n")
+        
+        # Write contents of each file
+        for root, _, files in os.walk(current_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, current_dir)
+                
+                # Skip the output file itself and common binary/unwanted files
+                if (file == os.path.basename(output_file) or
+                    file.endswith(('.pyc', '.pyo', '.pyd', '.so', '.dll', '.exe', 
+                                 '.git', '.idea', '__pycache__', '.css', '.md'))):
+                    continue
+                
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as source_file:
+                        content = source_file.read()
+                        f.write(f"\nFile: {rel_path}\n")
+                        f.write("="* (len(rel_path) + 6) + "\n\n")
+                        f.write(content)
+                        f.write("\n\n")
+                except (UnicodeDecodeError, IOError):
+                    f.write(f"\nFile: {rel_path}\n")
+                    f.write("="* (len(rel_path) + 6) + "\n")
+                    f.write("[Binary or unreadable file]\n\n")
+
+def generate_tree(start_path):
+    tree_str = ""
+    for root, dirs, files in os.walk(start_path):
+        # Skip hidden directories and files
+        dirs[:] = [d for d in dirs if not d.startswith('.')]
+        files = [f for f in files if not f.startswith('.')]
+        
+        level = root.replace(start_path, '').count(os.sep)
+        indent = '│   ' * (level - 1) + '├── ' if level > 0 else ''
+        rel_path = os.path.relpath(root, start_path)
+        
+        # Add directory name
+        if rel_path != '.':
+            tree_str += f"{indent}{os.path.basename(root)}/\n"
+        
+        # Add files
+        for i, file in enumerate(files):
+            if file == os.path.basename(__file__):
+                continue
+                
+            # Use └── for last file in a directory, ├── for others
+            if i == len(files) - 1:
+                file_indent = '│   ' * (level - 1) + '└── ' if level > 0 else ''
+            else:
+                file_indent = indent
+                
+            tree_str += f"{file_indent}{file}\n"
+    
+    return tree_str
+
+if __name__ == "__main__":
+    generate_project_documentation()
+
+
+File: package-lock.json
+=======================
+
+{
+  "name": "mini-framework",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "mini-framework",
+      "version": "1.0.0",
+      "license": "ISC",
+      "dependencies": {
+        "i": "^0.3.7"
+      }
+    },
+    "node_modules/i": {
+      "version": "0.3.7",
+      "resolved": "https://registry.npmjs.org/i/-/i-0.3.7.tgz",
+      "integrity": "sha512-FYz4wlXgkQwIPqhzC5TdNMLSE5+GS1IIDJZY/1ZiEPCT2S3COUVZeT5OW4BmW4r5LHLQuOosSwsvnroG9GR59Q==",
+      "engines": {
+        "node": ">=0.4"
+      }
+    }
+  }
+}
+
+
+
+File: package.json
+==================
+
+{
+  "name": "mini-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "i": "^0.3.7"
+  }
+}
+
+
+
+File: node_modules/.package-lock.json
+=====================================
+
+{
+  "name": "mini-framework",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "node_modules/i": {
+      "version": "0.3.7",
+      "resolved": "https://registry.npmjs.org/i/-/i-0.3.7.tgz",
+      "integrity": "sha512-FYz4wlXgkQwIPqhzC5TdNMLSE5+GS1IIDJZY/1ZiEPCT2S3COUVZeT5OW4BmW4r5LHLQuOosSwsvnroG9GR59Q==",
+      "engines": {
+        "node": ">=0.4"
+      }
+    }
+  }
+}
+
+
+
+File: node_modules/i/LICENSE
+============================
+
+Copyright (C) 2020 Pavan Kumar Sunkara
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+File: node_modules/i/package.json
+=================================
+
+{
+  "name": "i",
+  "version": "0.3.7",
+  "author": "Pavan Kumar Sunkara <pavan.sss1991@gmail.com> (pksunkara.github.com)",
+  "description": "custom inflections for nodejs",
+  "main": "./lib/inflect",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pksunkara/inflect.git"
+  },
+  "keywords": [
+    "singular",
+    "plural",
+    "camelize",
+    "underscore",
+    "dasherize",
+    "demodulize",
+    "ordinalize",
+    "uncountable",
+    "pluralize",
+    "singularize",
+    "titleize",
+    "tableize",
+    "classify",
+    "foreign_key"
+  ],
+  "homepage": "http://pksunkara.github.com/inflect",
+  "scripts": {
+    "test": "./node_modules/.bin/vows --spec $(find test -name '*-test.js')"
+  },
+  "contributors": [
+    {
+      "name": "Pavan Kumar Sunkara",
+      "email": "pavan.sss1991@gmail.com"
+    }
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "vows": "^0.8.2"
+  },
+  "engines": {
+    "node": ">=0.4"
+  },
+  "bugs": {
+    "url": "https://github.com/pksunkara/inflect/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/pksunkara/inflect/raw/master/LICENSE"
+    }
+  ]
+}
+
+
+
+File: node_modules/i/lib/native.js
+==================================
+
+module.exports = function (obj) {
+  var addProperty = function (method, func) {
+    String.prototype.__defineGetter__(method, func);
+  };
+
+  var stringPrototypeBlacklist = [
+    '__defineGetter__',
+    '__defineSetter__',
+    '__lookupGetter__',
+    '__lookupSetter__',
+    'charAt',
+    'constructor',
+    'hasOwnProperty',
+    'isPrototypeOf',
+    'propertyIsEnumerable',
+    'toLocaleString',
+    'toString',
+    'valueOf',
+    'charCodeAt',
+    'indexOf',
+    'lastIndexof',
+    'length',
+    'localeCompare',
+    'match',
+    'replace',
+    'search',
+    'slice',
+    'split',
+    'substring',
+    'toLocaleLowerCase',
+    'toLocaleUpperCase',
+    'toLowerCase',
+    'toUpperCase',
+    'trim',
+    'trimLeft',
+    'trimRight',
+    'gsub',
+  ];
+
+  Object.keys(obj).forEach(function (key) {
+    if (key != 'inflect' && key != 'inflections') {
+      if (stringPrototypeBlacklist.indexOf(key) !== -1) {
+        console.log('warn: You should not override String.prototype.' + key);
+      } else {
+        addProperty(key, function () {
+          return obj[key](this);
+        });
+      }
+    }
+  });
+};
+
+
+
+File: node_modules/i/lib/methods.js
+===================================
+
+// The Inflector transforms words from singular to plural, class names to table names, modularized class names to ones without,
+// and class names to foreign keys. The default inflections for pluralization, singularization, and uncountable words are kept
+// in inflections.coffee
+//
+// If you discover an incorrect inflection and require it for your application, you'll need
+// to correct it yourself (explained below).
+
+var util = require('./util');
+
+var inflect = module.exports;
+
+// Import [inflections](inflections.html) instance
+inflect.inflections = require('./inflections');
+
+// Gives easy access to add inflections to this class
+inflect.inflect = function (fn) {
+  fn(inflect.inflections);
+};
+
+// By default, _camelize_ converts strings to UpperCamelCase. If the argument to _camelize_
+// is set to _false_ then _camelize_ produces lowerCamelCase.
+//
+// _camelize_ will also convert '/' to '.' which is useful for converting paths to namespaces.
+//
+//     "bullet_record".camelize()             // => "BulletRecord"
+//     "bullet_record".camelize(false)        // => "bulletRecord"
+//     "bullet_record/errors".camelize()      // => "BulletRecord.Errors"
+//     "bullet_record/errors".camelize(false) // => "bulletRecord.Errors"
+//
+// As a rule of thumb you can think of _camelize_ as the inverse of _underscore_,
+// though there are cases where that does not hold:
+//
+//     "SSLError".underscore.camelize // => "SslError"
+inflect.camelize = function (lower_case_and_underscored_word, first_letter_in_uppercase) {
+  var result;
+  if (first_letter_in_uppercase == null) first_letter_in_uppercase = true;
+  result = util.string.gsub(lower_case_and_underscored_word, /\/(.?)/, function ($) {
+    return '.' + util.string.upcase($[1]);
+  });
+  result = util.string.gsub(result, /(?:_)(.)/, function ($) {
+    return util.string.upcase($[1]);
+  });
+  if (first_letter_in_uppercase) {
+    return util.string.upcase(result);
+  } else {
+    return util.string.downcase(result);
+  }
+};
+
+// Makes an underscored, lowercase form from the expression in the string.
+//
+// Changes '.' to '/' to convert namespaces to paths.
+//
+//     "BulletRecord".underscore()         // => "bullet_record"
+//     "BulletRecord.Errors".underscore()  // => "bullet_record/errors"
+//
+// As a rule of thumb you can think of +underscore+ as the inverse of +camelize+,
+// though there are cases where that does not hold:
+//
+//     "SSLError".underscore().camelize() // => "SslError"
+inflect.underscore = function (camel_cased_word) {
+  var self;
+  self = util.string.gsub(camel_cased_word, /\./, '/');
+  self = util.string.gsub(self, /([A-Z])([A-Z][a-z])/, '$1_$2');
+  self = util.string.gsub(self, /([a-z\d])([A-Z])/, '$1_$2');
+  self = util.string.gsub(self, /-/, '_');
+  return self.toLowerCase();
+};
+
+// Replaces underscores with dashes in the string.
+//
+//     "puni_puni".dasherize()   // => "puni-puni"
+inflect.dasherize = function (underscored_word) {
+  return util.string.gsub(underscored_word, /_/, '-');
+};
+
+// Removes the module part from the expression in the string.
+//
+//     "BulletRecord.String.Inflections".demodulize() // => "Inflections"
+//     "Inflections".demodulize()                     // => "Inflections"
+inflect.demodulize = function (class_name_in_module) {
+  return util.string.gsub(class_name_in_module, /^.*\./, '');
+};
+
+// Creates a foreign key name from a class name.
+// _separate_class_name_and_id_with_underscore_ sets whether
+// the method should put '_' between the name and 'id'.
+//
+//     "Message".foreign_key()      // => "message_id"
+//     "Message".foreign_key(false) // => "messageid"
+//     "Admin::Post".foreign_key()  // => "post_id"
+inflect.foreign_key = function (class_name, separate_class_name_and_id_with_underscore) {
+  if (separate_class_name_and_id_with_underscore == null) {
+    separate_class_name_and_id_with_underscore = true;
+  }
+  return (
+    inflect.underscore(inflect.demodulize(class_name)) + (separate_class_name_and_id_with_underscore ? '_id' : 'id')
+  );
+};
+
+// Turns a number into an ordinal string used to denote the position in an
+// ordered sequence such as 1st, 2nd, 3rd, 4th.
+//
+//     ordinalize(1)     // => "1st"
+//     ordinalize(2)     // => "2nd"
+//     ordinalize(1002)  // => "1002nd"
+//     ordinalize(1003)  // => "1003rd"
+//     ordinalize(-11)   // => "-11th"
+//     ordinalize(-1021) // => "-1021st"
+inflect.ordinalize = function (number) {
+  var _ref;
+  number = parseInt(number);
+  if ((_ref = Math.abs(number) % 100) === 11 || _ref === 12 || _ref === 13) {
+    return '' + number + 'th';
+  } else {
+    switch (Math.abs(number) % 10) {
+      case 1:
+        return '' + number + 'st';
+      case 2:
+        return '' + number + 'nd';
+      case 3:
+        return '' + number + 'rd';
+      default:
+        return '' + number + 'th';
+    }
+  }
+};
+
+// Checks a given word for uncountability
+//
+//     "money".uncountability()     // => true
+//     "my money".uncountability()  // => true
+inflect.uncountability = function (word) {
+  return inflect.inflections.uncountables.some(function (ele, ind, arr) {
+    return word.match(new RegExp('(\\b|_)' + ele + '$', 'i')) != null;
+  });
+};
+
+// Returns the plural form of the word in the string.
+//
+//     "post".pluralize()             // => "posts"
+//     "octopus".pluralize()          // => "octopi"
+//     "sheep".pluralize()            // => "sheep"
+//     "words".pluralize()            // => "words"
+//     "CamelOctopus".pluralize()     // => "CamelOctopi"
+inflect.pluralize = function (word) {
+  var plural, result;
+  result = word;
+  if (word === '' || inflect.uncountability(word)) {
+    return result;
+  } else {
+    for (var i = 0; i < inflect.inflections.plurals.length; i++) {
+      plural = inflect.inflections.plurals[i];
+      result = util.string.gsub(result, plural[0], plural[1]);
+      if (word.match(plural[0]) != null) break;
+    }
+    return result;
+  }
+};
+
+// The reverse of _pluralize_, returns the singular form of a word in a string.
+//
+//     "posts".singularize()            // => "post"
+//     "octopi".singularize()           // => "octopus"
+//     "sheep".singularize()            // => "sheep"
+//     "word".singularize()             // => "word"
+//     "CamelOctopi".singularize()      // => "CamelOctopus"
+inflect.singularize = function (word) {
+  var result, singular;
+  result = word;
+  if (word === '' || inflect.uncountability(word)) {
+    return result;
+  } else {
+    for (var i = 0; i < inflect.inflections.singulars.length; i++) {
+      singular = inflect.inflections.singulars[i];
+      result = util.string.gsub(result, singular[0], singular[1]);
+      if (word.match(singular[0])) break;
+    }
+    return result;
+  }
+};
+
+// Capitalizes the first word and turns underscores into spaces and strips a
+// trailing "_id", if any. Like _titleize_, this is meant for creating pretty output.
+//
+//     "employee_salary".humanize()   // => "Employee salary"
+//     "author_id".humanize()         // => "Author"
+inflect.humanize = function (lower_case_and_underscored_word) {
+  var human, result;
+  result = lower_case_and_underscored_word;
+  for (var i = 0; i < inflect.inflections.humans.length; i++) {
+    human = inflect.inflections.humans[i];
+    result = util.string.gsub(result, human[0], human[1]);
+  }
+  result = util.string.gsub(result, /_id$/, '');
+  result = util.string.gsub(result, /_/, ' ');
+  return util.string.capitalize(result, true);
+};
+
+// Capitalizes all the words and replaces some characters in the string to create
+// a nicer looking title. _titleize_ is meant for creating pretty output. It is not
+// used in the Bullet internals.
+//
+//
+//     "man from the boondocks".titleize()   // => "Man From The Boondocks"
+//     "x-men: the last stand".titleize()    // => "X Men: The Last Stand"
+inflect.titleize = function (word) {
+  var self;
+  self = inflect.humanize(inflect.underscore(word));
+  return util.string.capitalize(self);
+};
+
+// Create the name of a table like Bullet does for models to table names. This method
+// uses the _pluralize_ method on the last word in the string.
+//
+//     "RawScaledScorer".tableize()   // => "raw_scaled_scorers"
+//     "egg_and_ham".tableize()       // => "egg_and_hams"
+//     "fancyCategory".tableize()     // => "fancy_categories"
+inflect.tableize = function (class_name) {
+  return inflect.pluralize(inflect.underscore(class_name));
+};
+
+// Create a class name from a plural table name like Bullet does for table names to models.
+// Note that this returns a string and not a Class.
+//
+//     "egg_and_hams".classify()   // => "EggAndHam"
+//     "posts".classify()          // => "Post"
+//
+// Singular names are not handled correctly:
+//
+//     "business".classify()       // => "Busines"
+inflect.classify = function (table_name) {
+  return inflect.camelize(inflect.singularize(util.string.gsub(table_name, /^.*\./, '')));
+};
+
+
+
+File: node_modules/i/lib/inflections.js
+=======================================
+
+// A singleton instance of this class is yielded by Inflector.inflections, which can then be used to specify additional
+// inflection rules. Examples:
+//
+//     BulletSupport.Inflector.inflect ($) ->
+//       $.plural /^(ox)$/i, '$1en'
+//       $.singular /^(ox)en/i, '$1'
+//
+//       $.irregular 'octopus', 'octopi'
+//
+//       $.uncountable "equipment"
+//
+// New rules are added at the top. So in the example above, the irregular rule for octopus will now be the first of the
+// pluralization and singularization rules that is runs. This guarantees that your rules run before any of the rules that may
+// already have been loaded.
+
+var util = require('./util');
+
+var Inflections = function () {
+  this.plurals = [];
+  this.singulars = [];
+  this.uncountables = [];
+  this.humans = [];
+  require('./defaults')(this);
+  return this;
+};
+
+// Specifies a new pluralization rule and its replacement. The rule can either be a string or a regular expression.
+// The replacement should always be a string that may include references to the matched data from the rule.
+Inflections.prototype.plural = function (rule, replacement) {
+  if (typeof rule == 'string') {
+    this.uncountables = util.array.del(this.uncountables, rule);
+  }
+  this.uncountables = util.array.del(this.uncountables, replacement);
+  this.plurals.unshift([rule, replacement]);
+};
+
+// Specifies a new singularization rule and its replacement. The rule can either be a string or a regular expression.
+// The replacement should always be a string that may include references to the matched data from the rule.
+Inflections.prototype.singular = function (rule, replacement) {
+  if (typeof rule == 'string') {
+    this.uncountables = util.array.del(this.uncountables, rule);
+  }
+  this.uncountables = util.array.del(this.uncountables, replacement);
+  this.singulars.unshift([rule, replacement]);
+};
+
+// Specifies a new irregular that applies to both pluralization and singularization at the same time. This can only be used
+// for strings, not regular expressions. You simply pass the irregular in singular and plural form.
+//
+//     irregular 'octopus', 'octopi'
+//     irregular 'person', 'people'
+Inflections.prototype.irregular = function (singular, plural, fullMatchRequired) {
+  this.uncountables = util.array.del(this.uncountables, singular);
+  this.uncountables = util.array.del(this.uncountables, plural);
+  var prefix = '';
+  if (fullMatchRequired) {
+    prefix = '^';
+  }
+  if (singular[0].toUpperCase() == plural[0].toUpperCase()) {
+    this.plural(new RegExp('(' + prefix + singular[0] + ')' + singular.slice(1) + '$', 'i'), '$1' + plural.slice(1));
+    this.plural(new RegExp('(' + prefix + plural[0] + ')' + plural.slice(1) + '$', 'i'), '$1' + plural.slice(1));
+    this.singular(new RegExp('(' + prefix + plural[0] + ')' + plural.slice(1) + '$', 'i'), '$1' + singular.slice(1));
+  } else {
+    this.plural(
+      new RegExp(prefix + singular[0].toUpperCase() + singular.slice(1) + '$'),
+      plural[0].toUpperCase() + plural.slice(1)
+    );
+    this.plural(
+      new RegExp(prefix + singular[0].toLowerCase() + singular.slice(1) + '$'),
+      plural[0].toLowerCase() + plural.slice(1)
+    );
+    this.plural(
+      new RegExp(prefix + plural[0].toUpperCase() + plural.slice(1) + '$'),
+      plural[0].toUpperCase() + plural.slice(1)
+    );
+    this.plural(
+      new RegExp(prefix + plural[0].toLowerCase() + plural.slice(1) + '$'),
+      plural[0].toLowerCase() + plural.slice(1)
+    );
+    this.singular(
+      new RegExp(prefix + plural[0].toUpperCase() + plural.slice(1) + '$'),
+      singular[0].toUpperCase() + singular.slice(1)
+    );
+    this.singular(
+      new RegExp(prefix + plural[0].toLowerCase() + plural.slice(1) + '$'),
+      singular[0].toLowerCase() + singular.slice(1)
+    );
+  }
+};
+
+// Specifies a humanized form of a string by a regular expression rule or by a string mapping.
+// When using a regular expression based replacement, the normal humanize formatting is called after the replacement.
+// When a string is used, the human form should be specified as desired (example: 'The name', not 'the_name')
+//
+//     human /(.*)_cnt$/i, '$1_count'
+//     human "legacy_col_person_name", "Name"
+Inflections.prototype.human = function (rule, replacement) {
+  this.humans.unshift([rule, replacement]);
+};
+
+// Add uncountable words that shouldn't be attempted inflected.
+//
+//     uncountable "money"
+//     uncountable ["money", "information"]
+Inflections.prototype.uncountable = function (words) {
+  this.uncountables = this.uncountables.concat(words);
+};
+
+// Clears the loaded inflections within a given scope (default is _'all'_).
+// Give the scope as a symbol of the inflection type, the options are: _'plurals'_,
+// _'singulars'_, _'uncountables'_, _'humans'_.
+//
+//     clear 'all'
+//     clear 'plurals'
+Inflections.prototype.clear = function (scope) {
+  if (scope == null) scope = 'all';
+  switch (scope) {
+    case 'all':
+      this.plurals = [];
+      this.singulars = [];
+      this.uncountables = [];
+      this.humans = [];
+    default:
+      this[scope] = [];
+  }
+};
+
+// Clears the loaded inflections and initializes them to [default](../inflections.html)
+Inflections.prototype.default = function () {
+  this.plurals = [];
+  this.singulars = [];
+  this.uncountables = [];
+  this.humans = [];
+  require('./defaults')(this);
+  return this;
+};
+
+module.exports = new Inflections();
+
+
+
+File: node_modules/i/lib/defaults.js
+====================================
+
+// Default inflections
+module.exports = function (inflect) {
+  inflect.plural(/$/, 's');
+  inflect.plural(/s$/i, 's');
+  inflect.plural(/(ax|test)is$/i, '$1es');
+  inflect.plural(/(octop|vir)us$/i, '$1i');
+  inflect.plural(/(octop|vir)i$/i, '$1i');
+  inflect.plural(/(alias|status)$/i, '$1es');
+  inflect.plural(/(bu)s$/i, '$1ses');
+  inflect.plural(/(buffal|tomat)o$/i, '$1oes');
+  inflect.plural(/([ti])um$/i, '$1a');
+  inflect.plural(/([ti])a$/i, '$1a');
+  inflect.plural(/sis$/i, 'ses');
+  inflect.plural(/(?:([^fa])fe|(?:(oa)f)|([lr])f)$/i, '$1ves');
+  inflect.plural(/(hive)$/i, '$1s');
+  inflect.plural(/([^aeiouy]|qu)y$/i, '$1ies');
+  inflect.plural(/(x|ch|ss|sh)$/i, '$1es');
+  inflect.plural(/(matr|vert|ind)(?:ix|ex)$/i, '$1ices');
+  inflect.plural(/([m|l])ouse$/i, '$1ice');
+  inflect.plural(/([m|l])ice$/i, '$1ice');
+  inflect.plural(/^(ox)$/i, '$1en');
+  inflect.plural(/^(oxen)$/i, '$1');
+  inflect.plural(/(quiz)$/i, '$1zes');
+
+  inflect.singular(/s$/i, '');
+  inflect.singular(/(n)ews$/i, '$1ews');
+  inflect.singular(/([ti])a$/i, '$1um');
+  inflect.singular(/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$/i, '$1sis');
+  inflect.singular(/(^analy)ses$/i, '$1sis');
+  inflect.singular(/([^f])ves$/i, '$1fe');
+  inflect.singular(/(hive)s$/i, '$1');
+  inflect.singular(/(tive)s$/i, '$1');
+  inflect.singular(/(oave)s$/i, 'oaf');
+  inflect.singular(/([lr])ves$/i, '$1f');
+  inflect.singular(/([^aeiouy]|qu)ies$/i, '$1y');
+  inflect.singular(/(s)eries$/i, '$1eries');
+  inflect.singular(/(m)ovies$/i, '$1ovie');
+  inflect.singular(/(x|ch|ss|sh)es$/i, '$1');
+  inflect.singular(/([m|l])ice$/i, '$1ouse');
+  inflect.singular(/(bus)es$/i, '$1');
+  inflect.singular(/(o)es$/i, '$1');
+  inflect.singular(/(shoe)s$/i, '$1');
+  inflect.singular(/(cris|ax|test)es$/i, '$1is');
+  inflect.singular(/(octop|vir)i$/i, '$1us');
+  inflect.singular(/(alias|status)es$/i, '$1');
+  inflect.singular(/^(ox)en/i, '$1');
+  inflect.singular(/(vert|ind)ices$/i, '$1ex');
+  inflect.singular(/(matr)ices$/i, '$1ix');
+  inflect.singular(/(quiz)zes$/i, '$1');
+  inflect.singular(/(database)s$/i, '$1');
+
+  inflect.irregular('child', 'children');
+  inflect.irregular('person', 'people');
+  inflect.irregular('man', 'men');
+  inflect.irregular('child', 'children');
+  inflect.irregular('sex', 'sexes');
+  inflect.irregular('move', 'moves');
+  inflect.irregular('cow', 'kine');
+  inflect.irregular('zombie', 'zombies');
+  inflect.irregular('oaf', 'oafs', true);
+  inflect.irregular('jefe', 'jefes');
+  inflect.irregular('save', 'saves');
+  inflect.irregular('safe', 'safes');
+  inflect.irregular('fife', 'fifes');
+
+  inflect.uncountable([
+    'equipment',
+    'information',
+    'rice',
+    'money',
+    'species',
+    'series',
+    'fish',
+    'sheep',
+    'jeans',
+    'sushi',
+  ]);
+};
+
+
+
+File: node_modules/i/lib/inflect.js
+===================================
+
+// Requiring modules
+
+module.exports = function (attach) {
+  var methods = require('./methods');
+
+  if (attach) {
+    require('./native')(methods);
+  }
+
+  return methods;
+};
+
+
+
+File: node_modules/i/lib/util.js
+================================
+
+// Some utility functions in js
+
+var u = (module.exports = {
+  array: {
+    // Returns a copy of the array with the value removed once
+    //
+    //     [1, 2, 3, 1].del 1 #=> [2, 3, 1]
+    //     [1, 2, 3].del 4    #=> [1, 2, 3]
+    del: function (arr, val) {
+      var index = arr.indexOf(val);
+
+      if (index != -1) {
+        if (index == 0) {
+          return arr.slice(1);
+        } else {
+          return arr.slice(0, index).concat(arr.slice(index + 1));
+        }
+      } else {
+        return arr;
+      }
+    },
+
+    // Returns the first element of the array
+    //
+    //     [1, 2, 3].first() #=> 1
+    first: function (arr) {
+      return arr[0];
+    },
+
+    // Returns the last element of the array
+    //
+    //     [1, 2, 3].last()  #=> 3
+    last: function (arr) {
+      return arr[arr.length - 1];
+    },
+  },
+  string: {
+    // Returns a copy of str with all occurrences of pattern replaced with either replacement or the return value of a function.
+    // The pattern will typically be a Regexp; if it is a String then no regular expression metacharacters will be interpreted
+    // (that is /\d/ will match a digit, but ‘\d’ will match a backslash followed by a ‘d’).
+    //
+    // In the function form, the current match object is passed in as a parameter to the function, and variables such as
+    // $[1], $[2], $[3] (where $ is the match object) will be set appropriately. The value returned by the function will be
+    // substituted for the match on each call.
+    //
+    // The result inherits any tainting in the original string or any supplied replacement string.
+    //
+    //     "hello".gsub /[aeiou]/, '*'      #=> "h*ll*"
+    //     "hello".gsub /[aeiou]/, '<$1>'   #=> "h<e>ll<o>"
+    //     "hello".gsub /[aeiou]/, ($) {
+    //       "<#{$[1]}>"                    #=> "h<e>ll<o>"
+    //
+    gsub: function (str, pattern, replacement) {
+      var i, match, matchCmpr, matchCmprPrev, replacementStr, result, self;
+      if (!(pattern != null && replacement != null)) return u.string.value(str);
+      result = '';
+      self = str;
+      while (self.length > 0) {
+        if ((match = self.match(pattern))) {
+          result += self.slice(0, match.index);
+          if (typeof replacement === 'function') {
+            match[1] = match[1] || match[0];
+            result += replacement(match);
+          } else if (replacement.match(/\$[1-9]/)) {
+            matchCmprPrev = match;
+            matchCmpr = u.array.del(match, void 0);
+            while (matchCmpr !== matchCmprPrev) {
+              matchCmprPrev = matchCmpr;
+              matchCmpr = u.array.del(matchCmpr, void 0);
+            }
+            match[1] = match[1] || match[0];
+            replacementStr = replacement;
+            for (i = 1; i <= 9; i++) {
+              if (matchCmpr[i]) {
+                replacementStr = u.string.gsub(replacementStr, new RegExp('\\$' + i), matchCmpr[i]);
+              }
+            }
+            result += replacementStr;
+          } else {
+            result += replacement;
+          }
+          self = self.slice(match.index + match[0].length);
+        } else {
+          result += self;
+          self = '';
+        }
+      }
+      return result;
+    },
+
+    // Returns a copy of the String with the first letter being upper case
+    //
+    //     "hello".upcase #=> "Hello"
+    upcase: function (str) {
+      var self = u.string.gsub(str, /_([a-z])/, function ($) {
+        return '_' + $[1].toUpperCase();
+      });
+
+      self = u.string.gsub(self, /\/([a-z])/, function ($) {
+        return '/' + $[1].toUpperCase();
+      });
+
+      return self[0].toUpperCase() + self.substr(1);
+    },
+
+    // Returns a copy of capitalized string
+    //
+    //     "employee salary" #=> "Employee Salary"
+    capitalize: function (str, spaces) {
+      if (!str.length) {
+        return str;
+      }
+
+      var self = str.toLowerCase();
+
+      if (!spaces) {
+        self = u.string.gsub(self, /\s([a-z])/, function ($) {
+          return ' ' + $[1].toUpperCase();
+        });
+      }
+
+      return self[0].toUpperCase() + self.substr(1);
+    },
+
+    // Returns a copy of the String with the first letter being lower case
+    //
+    //     "HELLO".downcase #=> "hELLO"
+    downcase: function (str) {
+      var self = u.string.gsub(str, /_([A-Z])/, function ($) {
+        return '_' + $[1].toLowerCase();
+      });
+
+      self = u.string.gsub(self, /\/([A-Z])/, function ($) {
+        return '/' + $[1].toLowerCase();
+      });
+
+      return self[0].toLowerCase() + self.substr(1);
+    },
+
+    // Returns a string value for the String object
+    //
+    //     "hello".value() #=> "hello"
+    value: function (str) {
+      return str.substr(0);
+    },
+  },
+});
+
+
+
+File: node_modules/i/test/utils/string-test.js
+==============================================
+
+(function() {
+  var assert, vows, util;
+
+  vows = require('vows');
+
+  assert = require('assert');
+
+  util = require('../../lib/util');
+
+  vows.describe('Module core extension String').addBatch({
+    'Testing value': {
+      topic: 'bullet',
+      'join the keys': function(topic) {
+        return assert.equal(util.string.value(topic), 'bullet');
+      }
+    },
+    'Testing gsub': {
+      topic: 'bullet',
+      'when no args': function(topic) {
+        return assert.equal(util.string.gsub(topic), 'bullet');
+      },
+      'when only 1 arg': function(topic) {
+        return assert.equal(util.string.gsub(topic, /./), 'bullet');
+      },
+      'when given proper args': function(topic) {
+        return assert.equal(util.string.gsub(topic, /[aeiou]/, '*'), 'b*ll*t');
+      },
+      'when replacement is a function': {
+        'with many groups': function(topic) {
+          var str;
+          str = util.string.gsub(topic, /([aeiou])(.)/, function($) {
+            return "<" + $[1] + ">" + $[2];
+          });
+          return assert.equal(str, 'b<u>ll<e>t');
+        },
+        'with no groups': function(topic) {
+          var str;
+          str = util.string.gsub(topic, /[aeiou]/, function($) {
+            return "<" + $[1] + ">";
+          });
+          return assert.equal(str, 'b<u>ll<e>t');
+        }
+      },
+      'when replacement is special': {
+        'with many groups': function(topic) {
+          return assert.equal(util.string.gsub(topic, /([aeiou])(.)/, '<$1>$2'), 'b<u>ll<e>t');
+        },
+        'with no groups': function(topic) {
+          return assert.equal(util.string.gsub(topic, /[aeiou]/, '<$1>'), 'b<u>ll<e>t');
+        }
+      }
+    },
+    'Testing capitalize': {
+      topic: 'employee salary',
+      'normal': function(topic) {
+        return assert.equal(util.string.capitalize(topic), 'Employee Salary');
+      }
+    },
+    'Testing upcase': {
+      topic: 'bullet',
+      'only first letter should be upcase': function(topic) {
+        return assert.equal(util.string.upcase(topic), 'Bullet');
+      },
+      'letter after underscore': function(topic) {
+        return assert.equal(util.string.upcase('bullet_record'), 'Bullet_Record');
+      },
+      'letter after slash': function(topic) {
+        return assert.equal(util.string.upcase('bullet_record/errors'), 'Bullet_Record/Errors');
+      },
+      'no letter after space': function(topic) {
+        return assert.equal(util.string.upcase('employee salary'), 'Employee salary');
+      }
+    },
+    'Testing downcase': {
+      topic: 'BULLET',
+      'only first letter should be downcase': function(topic) {
+        return assert.equal(util.string.downcase(topic), 'bULLET');
+      },
+      'letter after underscore': function(topic) {
+        return assert.equal(util.string.downcase('BULLET_RECORD'), 'bULLET_rECORD');
+      },
+      'letter after slash': function(topic) {
+        return assert.equal(util.string.downcase('BULLET_RECORD/ERRORS'), 'bULLET_rECORD/eRRORS');
+      }
+    }
+  })["export"](module);
+
+}).call(this);
+
+
+
+File: node_modules/i/test/utils/array-test.js
+=============================================
+
+(function() {
+  var assert, vows, util;
+
+  vows = require('vows');
+
+  assert = require('assert');
+
+  util = require('../../lib/util');
+
+  vows.describe('Module core extension Array').addBatch({
+    'Testing del': {
+      topic: ['a', 'b', 'c'],
+      'element exists': {
+        'first element': function(topic) {
+          return assert.deepEqual(util.array.del(topic, 'a'), ['b', 'c']);
+        },
+        'middle element': function(topic) {
+          return assert.deepEqual(util.array.del(topic, 'b'), ['a', 'c']);
+        },
+        'last element': function(topic) {
+          return assert.deepEqual(util.array.del(topic, 'c'), ['a', 'b']);
+        }
+      },
+      'element does not exist': function(topic) {
+        return assert.deepEqual(util.array.del(topic, 'd'), ['a', 'b', 'c']);
+      }
+    },
+    'Testing utils': {
+      topic: ['a', 'b', 'c'],
+      'first': function(topic) {
+        return assert.equal(util.array.first(topic), 'a');
+      },
+      'last': function(topic) {
+        return assert.equal(util.array.last(topic), 'c');
+      }
+    }
+  })["export"](module);
+
+}).call(this);
+
+
+
+File: node_modules/i/test/inflector/methods-test.js
+===================================================
+
+(function() {
+  var assert, cases, vows, util;
+
+  vows = require('vows');
+
+  assert = require('assert');
+
+  util = require('../../lib/util');
+
+  cases = require('./cases');
+
+  vows.describe('Module Inflector methods').addBatch({
+    'Test inflector method': {
+      topic: require('../../lib/methods'),
+      'camelize': {
+        'word': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.CamelToUnderscore;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.camelize(words[i]), i));
+          }
+          return _results;
+        },
+        'word with first letter lower': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.UnderscoreToLowerCamel;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.camelize(i, false), words[i]));
+          }
+          return _results;
+        },
+        'path': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.CamelWithModuleToUnderscoreWithSlash;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.camelize(words[i]), i));
+          }
+          return _results;
+        },
+        'path with first letter lower': function(topic) {
+          return assert.equal(topic.camelize('bullet_record/errors', false), 'bulletRecord.Errors');
+        }
+      },
+      'underscore': {
+        'word': function(topic) {
+          var i, words, _i, _j, _len, _len2, _ref, _ref2, _results;
+          words = cases.CamelToUnderscore;
+          _ref = Object.keys(words);
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            assert.equal(topic.underscore(i), words[i]);
+          }
+          words = cases.CamelToUnderscoreWithoutReverse;
+          _ref2 = Object.keys(words);
+          _results = [];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            i = _ref2[_j];
+            _results.push(assert.equal(topic.underscore(i), words[i]));
+          }
+          return _results;
+        },
+        'path': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.CamelWithModuleToUnderscoreWithSlash;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.underscore(i), words[i]));
+          }
+          return _results;
+        },
+        'from dasherize': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.UnderscoresToDashes;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.underscore(topic.dasherize(i)), i));
+          }
+          return _results;
+        }
+      },
+      'dasherize': {
+        'underscored_word': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.UnderscoresToDashes;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.dasherize(i), words[i]));
+          }
+          return _results;
+        }
+      },
+      'demodulize': {
+        'module name': function(topic) {
+          return assert.equal(topic.demodulize('BulletRecord.CoreExtensions.Inflections'), 'Inflections');
+        },
+        'isolated module name': function(topic) {
+          return assert.equal(topic.demodulize('Inflections'), 'Inflections');
+        }
+      },
+      'foreign_key': {
+        'normal': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.ClassNameToForeignKeyWithoutUnderscore;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.foreign_key(i, false), words[i]));
+          }
+          return _results;
+        },
+        'with_underscore': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.ClassNameToForeignKeyWithUnderscore;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.foreign_key(i), words[i]));
+          }
+          return _results;
+        }
+      },
+      'ordinalize': function(topic) {
+        var i, words, _i, _len, _ref, _results;
+        words = cases.OrdinalNumbers;
+        _ref = Object.keys(words);
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _results.push(assert.equal(topic.ordinalize(i), words[i]));
+        }
+        return _results;
+      }
+    }
+  }).addBatch({
+    'Test inflector inflection methods': {
+      topic: function() {
+        var Inflector;
+        Inflector = require('../../lib/methods');
+        Inflector.inflections["default"]();
+        return Inflector;
+      },
+      'pluralize': {
+        'empty': function(topic) {
+          return assert.equal(topic.pluralize(''), '');
+        },
+        'uncountable': function(topic) {
+          return assert.equal(topic.pluralize('money'), 'money');
+        },
+        'normal': function(topic) {
+          topic.inflections.irregular('octopus', 'octopi');
+          return assert.equal(topic.pluralize('octopus'), 'octopi');
+        },
+        'cases': function(topic) {
+          var i, words, _i, _j, _len, _len2, _ref, _ref2, _results;
+          words = cases.SingularToPlural;
+          _ref = Object.keys(words);
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            assert.equal(topic.pluralize(i), words[i]);
+          }
+          _ref2 = Object.keys(words);
+          _results = [];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            i = _ref2[_j];
+            _results.push(assert.equal(topic.pluralize(util.string.capitalize(i)), util.string.capitalize(words[i])));
+          }
+          return _results;
+        },
+        'cases plural': function(topic) {
+          var i, words, _i, _j, _len, _len2, _ref, _ref2, _results;
+          words = cases.SingularToPlural;
+          _ref = Object.keys(words);
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            assert.equal(topic.pluralize(words[i]), words[i]);
+          }
+          _ref2 = Object.keys(words);
+          _results = [];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            i = _ref2[_j];
+            _results.push(assert.equal(topic.pluralize(util.string.capitalize(words[i])), util.string.capitalize(words[i])));
+          }
+          return _results;
+        }
+      },
+      'singuralize': {
+        'empty': function(topic) {
+          return assert.equal(topic.singularize(''), '');
+        },
+        'uncountable': function(topic) {
+          return assert.equal(topic.singularize('money'), 'money');
+        },
+        'normal': function(topic) {
+          topic.inflections.irregular('octopus', 'octopi');
+          return assert.equal(topic.singularize('octopi'), 'octopus');
+        },
+        'cases': function(topic) {
+          var i, words, _i, _j, _len, _len2, _ref, _ref2, _results;
+          words = cases.SingularToPlural;
+          _ref = Object.keys(words);
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            assert.equal(topic.singularize(words[i]), i);
+          }
+          _ref2 = Object.keys(words);
+          _results = [];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            i = _ref2[_j];
+            _results.push(assert.equal(topic.singularize(util.string.capitalize(words[i])), util.string.capitalize(i)));
+          }
+          return _results;
+        }
+      },
+      'uncountablility': {
+        'normal': function(topic) {
+          var i, words, _i, _j, _k, _len, _len2, _len3, _results;
+          words = topic.inflections.uncountables;
+          for (_i = 0, _len = words.length; _i < _len; _i++) {
+            i = words[_i];
+            assert.equal(topic.singularize(i), i);
+          }
+          for (_j = 0, _len2 = words.length; _j < _len2; _j++) {
+            i = words[_j];
+            assert.equal(topic.pluralize(i), i);
+          }
+          _results = [];
+          for (_k = 0, _len3 = words.length; _k < _len3; _k++) {
+            i = words[_k];
+            _results.push(assert.equal(topic.singularize(i), topic.pluralize(i)));
+          }
+          return _results;
+        },
+        'greedy': function(topic) {
+          var countable_word, uncountable_word;
+          uncountable_word = "ors";
+          countable_word = "sponsor";
+          topic.inflections.uncountable(uncountable_word);
+          assert.equal(topic.singularize(uncountable_word), uncountable_word);
+          assert.equal(topic.pluralize(uncountable_word), uncountable_word);
+          assert.equal(topic.pluralize(uncountable_word), topic.singularize(uncountable_word));
+          assert.equal(topic.singularize(countable_word), 'sponsor');
+          assert.equal(topic.pluralize(countable_word), 'sponsors');
+          return assert.equal(topic.singularize(topic.pluralize(countable_word)), 'sponsor');
+        }
+      },
+      'humanize': {
+        'normal': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.UnderscoreToHuman;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.humanize(i), words[i]));
+          }
+          return _results;
+        },
+        'with rule': function(topic) {
+          topic.inflections.human(/^(.*)_cnt$/i, '$1_count');
+          topic.inflections.human(/^prefix_(.*)$/i, '$1');
+          assert.equal(topic.humanize('jargon_cnt'), 'Jargon count');
+          return assert.equal(topic.humanize('prefix_request'), 'Request');
+        },
+        'with string': function(topic) {
+          topic.inflections.human('col_rpted_bugs', 'Reported bugs');
+          assert.equal(topic.humanize('col_rpted_bugs'), 'Reported bugs');
+          return assert.equal(topic.humanize('COL_rpted_bugs'), 'Col rpted bugs');
+        },
+        'with _id': function(topic) {
+          return assert.equal(topic.humanize('author_id'), 'Author');
+        },
+        'with just _id': function(topic) {
+          return assert.equal(topic.humanize('_id'), '');
+        }
+      },
+      'titleize': {
+        'normal': function(topic) {
+          var i, words, _i, _len, _ref, _results;
+          words = cases.MixtureToTitleCase;
+          _ref = Object.keys(words);
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _results.push(assert.equal(topic.titleize(i), words[i]));
+          }
+          return _results;
+        },
+        'with hyphens': function(topic) {
+          return assert.equal(topic.titleize('x-men: the last stand'), 'X Men: The Last Stand');
+        },
+        'with ampersands': function(topic) {
+          return assert.equal(topic.titleize('garfunkel & oates'), 'Garfunkel & Oates');
+        }
+      },
+      'tableize': function(topic) {
+        var i, words, _i, _len, _ref, _results;
+        words = cases.ClassNameToTableName;
+        _ref = Object.keys(words);
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _results.push(assert.equal(topic.tableize(i), words[i]));
+        }
+        return _results;
+      },
+      'classify': {
+        'underscore': function(topic) {
+          var i, words, _i, _j, _len, _len2, _ref, _ref2, _results;
+          words = cases.ClassNameToTableName;
+          _ref = Object.keys(words);
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            assert.equal(topic.classify(words[i]), i);
+          }
+          _ref2 = Object.keys(words);
+          _results = [];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            i = _ref2[_j];
+            _results.push(assert.equal(topic.classify('table_prefix.' + words[i]), i));
+          }
+          return _results;
+        },
+        'normal': function(topic) {
+          topic.inflections.irregular('octopus', 'octopi');
+          return assert.equal(topic.classify('octopi'), 'Octopus');
+        }
+      }
+    }
+  })["export"](module);
+
+}).call(this);
+
+
+
+File: node_modules/i/test/inflector/inflections-test.js
+=======================================================
+
+(function() {
+  var assert, vows;
+
+  vows = require('vows');
+
+  assert = require('assert');
+
+  vows.describe('Module Inflector inflections').addBatch({
+    'Test inflector inflections': {
+      topic: require('../../lib/inflections'),
+      'clear': {
+        'single': function(topic) {
+          topic.uncountables = [1, 2, 3];
+          topic.humans = [1, 2, 3];
+          topic.clear('uncountables');
+          assert.isEmpty(topic.uncountables);
+          return assert.deepEqual(topic.humans, [1, 2, 3]);
+        },
+        'all': function(topic) {
+          assert.deepEqual(topic.humans, [1, 2, 3]);
+          topic.uncountables = [1, 2, 3];
+          topic.clear();
+          assert.isEmpty(topic.uncountables);
+          return assert.isEmpty(topic.humans);
+        }
+      },
+      'uncountable': {
+        'one item': function(topic) {
+          topic.clear();
+          assert.isEmpty(topic.uncountables);
+          topic.uncountable('money');
+          return assert.deepEqual(topic.uncountables, ['money']);
+        },
+        'many items': function(topic) {
+          topic.clear();
+          assert.isEmpty(topic.uncountables);
+          topic.uncountable(['money', 'rice']);
+          return assert.deepEqual(topic.uncountables, ['money', 'rice']);
+        }
+      },
+      'human': function(topic) {
+        topic.clear();
+        assert.isEmpty(topic.humans);
+        topic.human("legacy_col_person_name", "Name");
+        return assert.deepEqual(topic.humans, [["legacy_col_person_name", "Name"]]);
+      },
+      'plural': function(topic) {
+        topic.clear();
+        assert.isEmpty(topic.plurals);
+        topic.plural('ox', 'oxen');
+        assert.deepEqual(topic.plurals, [['ox', 'oxen']]);
+        topic.uncountable('money');
+        assert.deepEqual(topic.uncountables, ['money']);
+        topic.uncountable('monies');
+        topic.plural('money', 'monies');
+        assert.deepEqual(topic.plurals, [['money', 'monies'], ['ox', 'oxen']]);
+        return assert.isEmpty(topic.uncountables);
+      },
+      'singular': function(topic) {
+        topic.clear();
+        assert.isEmpty(topic.singulars);
+        topic.singular('ox', 'oxen');
+        assert.deepEqual(topic.singulars, [['ox', 'oxen']]);
+        topic.uncountable('money');
+        assert.deepEqual(topic.uncountables, ['money']);
+        topic.uncountable('monies');
+        topic.singular('money', 'monies');
+        assert.deepEqual(topic.singulars, [['money', 'monies'], ['ox', 'oxen']]);
+        return assert.isEmpty(topic.uncountables);
+      },
+      'irregular': function(topic) {
+        topic.clear();
+        topic.uncountable(['octopi', 'octopus']);
+        assert.deepEqual(topic.uncountables, ['octopi', 'octopus']);
+        topic.irregular('octopus', 'octopi');
+        assert.isEmpty(topic.uncountables);
+        assert.equal(topic.singulars[0][0].toString(), /(o)ctopi$/i.toString());
+        assert.equal(topic.singulars[0][1], '$1ctopus');
+        assert.equal(topic.plurals[0][0].toString(), /(o)ctopi$/i.toString());
+        assert.equal(topic.plurals[0][1], '$1ctopi');
+        assert.equal(topic.plurals[1][0].toString(), /(o)ctopus$/i.toString());
+        return assert.equal(topic.plurals[1][1].toString(), '$1ctopi');
+      }
+    }
+  })["export"](module);
+
+}).call(this);
+
+
+
+File: node_modules/i/test/inflector/cases.js
+============================================
+
+(function() {
+
+  module.exports = {
+    SingularToPlural: {
+      "search": "searches",
+      "switch": "switches",
+      "fix": "fixes",
+      "box": "boxes",
+      "process": "processes",
+      "address": "addresses",
+      "case": "cases",
+      "stack": "stacks",
+      "wish": "wishes",
+      "fish": "fish",
+      "jeans": "jeans",
+      "funky jeans": "funky jeans",
+      "my money": "my money",
+      "category": "categories",
+      "query": "queries",
+      "ability": "abilities",
+      "agency": "agencies",
+      "movie": "movies",
+      "archive": "archives",
+      "index": "indices",
+      "wife": "wives",
+      "safe": "saves",
+      "half": "halves",
+      "move": "moves",
+      "salesperson": "salespeople",
+      "person": "people",
+      "spokesman": "spokesmen",
+      "man": "men",
+      "woman": "women",
+      "basis": "bases",
+      "diagnosis": "diagnoses",
+      "diagnosis_a": "diagnosis_as",
+      "datum": "data",
+      "medium": "media",
+      "stadium": "stadia",
+      "analysis": "analyses",
+      "node_child": "node_children",
+      "child": "children",
+      "experience": "experiences",
+      "day": "days",
+      "comment": "comments",
+      "foobar": "foobars",
+      "newsletter": "newsletters",
+      "old_news": "old_news",
+      "news": "news",
+      "series": "series",
+      "species": "species",
+      "quiz": "quizzes",
+      "perspective": "perspectives",
+      "ox": "oxen",
+      "photo": "photos",
+      "buffalo": "buffaloes",
+      "tomato": "tomatoes",
+      "dwarf": "dwarves",
+      "elf": "elves",
+      "information": "information",
+      "equipment": "equipment",
+      "bus": "buses",
+      "status": "statuses",
+      "status_code": "status_codes",
+      "mouse": "mice",
+      "louse": "lice",
+      "house": "houses",
+      "octopus": "octopi",
+      "virus": "viri",
+      "alias": "aliases",
+      "portfolio": "portfolios",
+      "vertex": "vertices",
+      "matrix": "matrices",
+      "matrix_fu": "matrix_fus",
+      "axis": "axes",
+      "testis": "testes",
+      "crisis": "crises",
+      "rice": "rice",
+      "shoe": "shoes",
+      "horse": "horses",
+      "prize": "prizes",
+      "edge": "edges",
+      "cow": "kine",
+      "database": "databases",
+      "safe": "safes",
+      "belief": "beliefs",
+      "gaffe": "gaffes",
+      "cafe": "cafes",
+      "caffe": "caffes",
+      "life": "lives",
+      "wife": "wives",
+      "save": "saves",
+      "fife": "fifes",
+      "carafe": "carafes",
+      "giraffe": "giraffes",
+      "elf": "elves",
+      "calf": "calves",
+      "bookshelf": "bookshelves",
+      "wolf": "wolves",
+      "half": "halves",
+      "meatloaf": "meatloaves",
+      "loaf": "loaves",
+      "oaf": "oafs",
+      "jefe": "jefes",
+      "afterlife": "afterlives",
+    },
+    CamelToUnderscore: {
+      "Product": "product",
+      "SpecialGuest": "special_guest",
+      "ApplicationController": "application_controller",
+      "Area51Controller": "area51_controller"
+    },
+    UnderscoreToLowerCamel: {
+      "product": "product",
+      "Widget": "widget",
+      "special_guest": "specialGuest",
+      "application_controller": "applicationController",
+      "area51_controller": "area51Controller"
+    },
+    CamelToUnderscoreWithoutReverse: {
+      "HTMLTidy": "html_tidy",
+      "HTMLTidyGenerator": "html_tidy_generator",
+      "FreeBSD": "free_bsd",
+      "HTML": "html"
+    },
+    CamelWithModuleToUnderscoreWithSlash: {
+      "Admin.Product": "admin/product",
+      "Users.Commission.Department": "users/commission/department",
+      "UsersSection.CommissionDepartment": "users_section/commission_department"
+    },
+    ClassNameToForeignKeyWithUnderscore: {
+      "Person": "person_id",
+      "MyApplication.Billing.Account": "account_id"
+    },
+    ClassNameToForeignKeyWithoutUnderscore: {
+      "Person": "personid",
+      "MyApplication.Billing.Account": "accountid"
+    },
+    ClassNameToTableName: {
+      "PrimarySpokesman": "primary_spokesmen",
+      "NodeChild": "node_children"
+    },
+    UnderscoreToHuman: {
+      "employee_salary": "Employee salary",
+      "employee_id": "Employee",
+      "underground": "Underground"
+    },
+    MixtureToTitleCase: {
+      'bullet_record': 'Bullet Record',
+      'BulletRecord': 'Bullet Record',
+      'bullet web service': 'Bullet Web Service',
+      'Bullet Web Service': 'Bullet Web Service',
+      'Bullet web service': 'Bullet Web Service',
+      'bulletwebservice': 'Bulletwebservice',
+      'Bulletwebservice': 'Bulletwebservice',
+      "pavan's code": "Pavan's Code",
+      "Pavan's code": "Pavan's Code",
+      "pavan's Code": "Pavan's Code"
+    },
+    OrdinalNumbers: {
+      "-1": "-1st",
+      "-2": "-2nd",
+      "-3": "-3rd",
+      "-4": "-4th",
+      "-5": "-5th",
+      "-6": "-6th",
+      "-7": "-7th",
+      "-8": "-8th",
+      "-9": "-9th",
+      "-10": "-10th",
+      "-11": "-11th",
+      "-12": "-12th",
+      "-13": "-13th",
+      "-14": "-14th",
+      "-20": "-20th",
+      "-21": "-21st",
+      "-22": "-22nd",
+      "-23": "-23rd",
+      "-24": "-24th",
+      "-100": "-100th",
+      "-101": "-101st",
+      "-102": "-102nd",
+      "-103": "-103rd",
+      "-104": "-104th",
+      "-110": "-110th",
+      "-111": "-111th",
+      "-112": "-112th",
+      "-113": "-113th",
+      "-1000": "-1000th",
+      "-1001": "-1001st",
+      "0": "0th",
+      "1": "1st",
+      "2": "2nd",
+      "3": "3rd",
+      "4": "4th",
+      "5": "5th",
+      "6": "6th",
+      "7": "7th",
+      "8": "8th",
+      "9": "9th",
+      "10": "10th",
+      "11": "11th",
+      "12": "12th",
+      "13": "13th",
+      "14": "14th",
+      "20": "20th",
+      "21": "21st",
+      "22": "22nd",
+      "23": "23rd",
+      "24": "24th",
+      "100": "100th",
+      "101": "101st",
+      "102": "102nd",
+      "103": "103rd",
+      "104": "104th",
+      "110": "110th",
+      "111": "111th",
+      "112": "112th",
+      "113": "113th",
+      "1000": "1000th",
+      "1001": "1001st"
+    },
+    UnderscoresToDashes: {
+      "street": "street",
+      "street_address": "street-address",
+      "person_street_address": "person-street-address"
+    }
+  };
+
+}).call(this);
+
+
+
+File: node_modules/i/.github/dependabot.yml
+===========================================
+
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "04:00"
+  open-pull-requests-limit: 10
+
+
+
+File: node_modules/i/.github/workflows/ci.yml
+=============================================
+
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+    types: [opened, reopened, synchronize]
+jobs:
+  test:
+    name: Tests
+    strategy:
+      fail-fast: true
+      matrix:
+        node: [4, 6, 8, 10, 12, 14]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Node.js
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: npm install
+      - name: Test
+        run: npm test
+
+
+
+File: examples/todomvc/manifest.json
+====================================
+
+{
+  "name": "TodoMVC App",
+  "short_name": "TodoMVC",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "icons": []
+} 
+
+
+File: examples/todomvc/app.js
+=============================
+
+import { Store } from '../../src/core/state.js';
+import { createElement, render } from '../../src/core/dom.js';
+import * as Events from '../../src/core/events.js';
+import { Header } from './components/Header.js';
+import { TodoList } from './components/TodoList.js';
+import { localStorageMiddleware } from './store/middleware.js';
+
+// Constants
+const STORAGE_KEY = 'todos-miniframework';
+
+// Initialize store
+let store;
+
+// Event handlers
+function setupEventHandlers() {
+  // No need to remove event listeners since we're using event delegation
+  // and the handlers are stored in a WeakMap
+
+  // Add new todo
+  Events.on('keypress', '.new-todo', function(event) {
+    if (event.key === 'Enter' && event.target.value.trim()) {
+      event.preventDefault();
+      const title = event.target.value.trim();
+      addTodo(title);
+      event.target.value = '';
+    }
+  });
+
+  // Toggle todo completion
+  Events.on('click', '.toggle', function(event) {
+    const li = event.target.closest('li');
+    toggleTodoCompletion(li.dataset.id);
+  });
+
+  // Delete todo
+  Events.on('click', '.destroy', function(event) {
+    const li = event.target.closest('li');
+    deleteTodo(li.dataset.id);
+  });
+
+  // Toggle all
+  Events.on('click', '#toggle-all', function(event) {
+    const checked = event.target.checked;
+    toggleAll(checked);
+  });
+
+  // Clear completed
+  Events.on('click', '.clear-completed', function() {
+    clearCompletedTodos();
+  });
+
+  // Edit todo on double click
+  Events.on('dblclick', '.todo-list label', function(event) {
+    const li = event.target.closest('li');
+    const id = li.dataset.id;
+    const input = li.querySelector('.edit');
+    
+    // Update the editing state in the store
+    const todos = store.getState().todos.map(todo =>
+      todo.id === id ? { ...todo, editing: true } : todo
+    );
+    store.setState({ todos, lastChangedProp: 'todos' });
+    
+    // Focus the input and move cursor to end
+    input.focus();
+    input.value = input.value;
+    input.dataset.originalValue = input.value;
+  });
+
+  // Handle edit completion
+  Events.on('blur', '.edit', finishEditing);
+  Events.on('keydown', '.edit', function(event) {
+    if (event.key === 'Enter') {
+      event.target.blur();
+    } else if (event.key === 'Escape') {
+      const li = event.target.closest('li');
+      const id = li.dataset.id;
+      const input = event.target;
+      
+      // Restore original value and remove editing state in store
+      input.value = input.dataset.originalValue;
+      const todos = store.getState().todos.map(todo =>
+        todo.id === id ? { ...todo, editing: false } : todo
+      );
+      store.setState({ todos, lastChangedProp: 'todos' });
+    }
+  });
+
+  // Filter clicks
+  Events.on('click', '.filters a', function(event) {
+    event.preventDefault();
+    const filter = event.target.getAttribute('href').replace('#/', '') || 'all';
+    setFilter(filter);
+  });
+}
+
+// State manipulation functions
+function addTodo(title) {
+  const currentState = store.getState();
+  const newTodo = {
+    id: Date.now().toString(),
+    title,
+    completed: false,
+    editing: false
+  };
+  const todos = [...currentState.todos, newTodo];
+  store.setState({ todos, lastChangedProp: 'todos' });
+  renderApp(store.getState());
+}
+function toggleTodoCompletion(id) {
+  const todos = store.getState().todos.map(todo =>
+    todo.id === id ? { ...todo, completed: !todo.completed } : todo
+  );
+  store.setState({ todos, lastChangedProp: 'todos' });
+
+}
+
+function deleteTodo(id) {
+  const todos = store.getState().todos.filter(todo => todo.id !== id);
+  store.setState({ todos, lastChangedProp: 'todos' });
+  renderApp(store.getState());
+}
+
+function clearCompletedTodos() {
+  const todos = store.getState().todos.filter(todo => !todo.completed);
+  store.setState({ todos, lastChangedProp: 'todos' });
+}
+
+function toggleAll(checked) {
+  const todos = store.getState().todos.map(todo => ({
+    ...todo,
+    completed: checked
+  }));
+  store.setState({ todos, lastChangedProp: 'todos' });
+}
+
+function finishEditing(event) {
+  const input = event.target;
+  const li = input.closest('li');
+  const id = li.dataset.id;
+  const newTitle = input.value.trim();
+
+  if (newTitle) {
+    const todos = store.getState().todos.map(todo =>
+      todo.id === id ? { ...todo, title: newTitle, editing: false } : todo
+    );
+    store.setState({ todos, lastChangedProp: 'todos' });
+  } else {
+    deleteTodo(id);
+  }
+}
+
+// Filter functions
+function getFilteredTodos(todos, filter) {
+  console.log('Filtering todos:', todos, 'with filter:', filter);
+  switch (filter) {
+    case 'active':
+      return todos.filter(todo => !todo.completed);
+    case 'completed':
+      return todos.filter(todo => todo.completed);
+    default:
+      return todos;
+  }
+}
+
+function setFilter(filter) {
+  store.setState({ filter, lastChangedProp: 'filter' });
+  window.history.pushState(null, '', `#/${filter === 'all' ? '' : filter}`);
+  updateFilterUI(filter);
+  renderApp(store.getState());
+}
+function updateFilterUI(currentFilter) {
+  // Remove selected class from all filter links
+  document.querySelectorAll('.filters a').forEach(link => {
+    link.classList.remove('selected');
+  });
+  
+  // Add selected class to current filter link
+  const filterLink = document.querySelector(`.filters a[href="#/${currentFilter === 'all' ? '' : currentFilter}"]`);
+  if (filterLink) {
+    filterLink.classList.add('selected');
+  }
+}
+
+// Render function
+function renderApp(state) {
+  const filteredTodos = getFilteredTodos(state.todos, state.filter);
+  console.log(filteredTodos)
+  const appContent = createElement('div', { class: 'todoapp' }, [
+    new Header({ onNewTodo: addTodo }).render(),
+    state.todos.length > 0 ? createElement('section', { class: 'main' }, [
+      createElement('div', { class: 'toggle-all-container' }, [
+        createElement('input', {
+          id: 'toggle-all',
+          class: 'toggle-all',
+          type: 'checkbox',
+          checked: filteredTodos.every(todo => todo.completed)
+        }, []),
+        createElement('label', { for: 'toggle-all' }, ['Mark all as complete']),
+      ]),
+      new TodoList({
+        todos: filteredTodos,
+        onToggle: toggleTodoCompletion,
+        onDelete: deleteTodo,
+        onEdit: (id) => {
+          const todos = state.todos.map(todo =>
+            todo.id === id ? { ...todo, editing: true } : todo
+          );
+          store.setState({ todos, lastChangedProp: 'todos' });
+        }
+      }).render()
+    ]) : null
+  ]);
+
+  const appContainer = document.getElementById('app');
+  render(appContent, appContainer);
+}
+
+// Initialize the application
+function initApp() {
+  const savedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  const initialFilter = location.hash.replace('#/', '') || 'all';
+  
+  // Create the store
+  store = new Store({
+    todos: savedTodos,
+    filter: initialFilter,
+    lastChangedProp: null
+  }, [
+    localStorageMiddleware(STORAGE_KEY)
+  ]);
+
+  // Setup event handlers first
+  setupEventHandlers();
+
+  // Update UI to show correct filter tab
+  updateFilterUI(initialFilter);
+  
+  // Modify subscription to use requestAnimationFrame properly
+  store.subscribe((state) => {
+    if (state.lastChangedProp === 'todos') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.todos));
+    }
+    // Use requestAnimationFrame for smooth rendering
+    window.requestAnimationFrame(() => {
+      renderApp(state);
+    });
+  });
+
+  // Setup routing
+  window.addEventListener('hashchange', () => {
+    const route = location.hash.replace('#/', '') || 'all';
+    store.setState({ filter: route, lastChangedProp: 'filter' });
+    renderApp(store.getState());
+  });
+
+  // Initial render
+  renderApp(store.getState());
+
+  setupThemeToggle();
+}
+
+function setupThemeToggle() {
+  const themeToggle = document.querySelector('.theme-toggle');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+  
+  // Set initial theme
+  document.documentElement.setAttribute('data-theme', 
+    localStorage.getItem('theme') || (prefersDark.matches ? 'dark' : 'light')
+  );
+
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+}
+
+// Start the app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
+
+
+
+
+File: examples/todomvc/index.html
+=================================
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>TodoMVC</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="nav-logo">TodoMVC</div>
+            <button class="theme-toggle" aria-label="Toggle theme">
+                <svg class="sun-icon" viewBox="0 0 24 24">
+                    <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+                </svg>
+                <svg class="moon-icon" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="filters-container">
+                <h3>Filters</h3>
+                <ul class="filters">
+                    <li><a href="#/" class="selected">All</a></li>
+                    <li><a href="#/active">Active</a></li>
+                    <li><a href="#/completed">Completed</a></li>
+                </ul>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div id="app"></div>
+        </main>
+    </div>
+    <footer class="info">
+        <p>Double-click to edit a todo</p>
+        <p>Created using Mini Framework</p>
+    </footer>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
+
+
+
+File: examples/todomvc/components/Todo.js
+=========================================
+
+import { Component } from '../../../src/core/component.js';
+import { createElement } from '../../../src/core/dom.js';
+
+export class Todo extends Component {
+  render() {
+    const { todo, onToggle, onDelete, onEdit } = this.props;
+    
+    return createElement('li', {
+      class: `${todo.completed ? 'completed' : ''} ${todo.editing ? 'editing' : ''}`,
+      'data-id': todo.id,
+      key: todo.id
+    }, [
+      createElement('div', { class: 'view' }, [
+        createElement('div', { class: 'toggle-container' }, [
+          createElement('input', {
+            class: 'toggle',
+            type: 'checkbox',
+            checked: todo.completed,
+            onChange: () => onToggle(todo.id)
+          }, []),
+          createElement('label', {
+            onDblClick: () => onEdit(todo.id)
+          }, [todo.title]),
+        ]),
+        createElement('button', {
+          class: 'destroy',
+          onClick: () => onDelete(todo.id)
+        }, [])
+      ]),
+      createElement('input', {
+        class: 'edit',
+        value: todo.title,
+        'data-original-value': todo.title
+      }, [])
+    ]);
+  }
+}
+
+
+File: examples/todomvc/components/TodoList.js
+=============================================
+
+import { Component } from '../../../src/core/component.js';
+import { createElement } from '../../../src/core/dom.js';
+import { Todo } from './Todo.js';
+
+export class TodoList extends Component {
+  render() {
+    const { todos, onToggle, onDelete, onEdit } = this.props;
+    return createElement('ul', { class: 'todo-list' },
+      todos.map(todo => {
+        const todoComponent = new Todo({ 
+          todo, 
+          onToggle, 
+          onDelete, 
+          onEdit,
+          key: todo.id
+        });
+        return todoComponent.render();
+      })
+    );
+  }
+}
+
+
+File: examples/todomvc/components/Header.js
+===========================================
+
+import { Component } from '../../../src/core/component.js';
+import { createElement } from '../../../src/core/dom.js';
+
+export class Header extends Component {
+  render() {
+    const { onNewTodo } = this.props;
+    return createElement('header', { class: 'header' }, [
+      createElement('h1', {}, ['todos']),
+      createElement('input', {
+        class: 'new-todo',
+        placeholder: 'What needs to be done?',
+        onKeyPress: (event) => {
+          if (event.key === 'Enter' && event.target.value.trim()) {
+            onNewTodo(event.target.value.trim());
+            event.target.value = '';
+          }
+        }
+      }, [])
+    ]);
+  }
+}
+
+
+File: examples/todomvc/components/Filters.js
+============================================
+
+import { Component } from '../../../src/core/component.js';
+import { createElement } from '../../../src/core/dom.js';
+
+export class Filters extends Component {
+  render() {
+    const { currentFilter, onFilterChange } = this.props;
+    return createElement('ul', { class: 'filters' }, [
+      ['all', 'active', 'completed'].map(filter => 
+        createElement('li', {}, [
+          createElement('a', {
+            href: `#/${filter === 'all' ? '' : filter}`,
+            class: currentFilter === filter ? 'selected' : '',
+            onClick: (e) => {
+              e.preventDefault();
+              onFilterChange(filter);
+            }
+          }, [filter.charAt(0).toUpperCase() + filter.slice(1)])
+        ])
+      )
+    ]);
+  }
+}
+
+
+File: examples/todomvc/store/middleware.js
+==========================================
+
+export const localStorageMiddleware = (key) => (store) => (next) => (action) => {
+    const result = next(action);
+    if (action.type === 'SET_STATE' && action.payload.lastChangedProp === 'todos') {
+      localStorage.setItem(key, JSON.stringify(store.getState().todos));
+    }
+    return result;
+  };
+
+
+File: src/index.js
+==================
+
+// index.js
+export * as DOM from './core/dom.js';
+export { Router } from './core/router.js';
+export { Store } from './core/state.js';
+export * as Events from './core/events.js';
+export * as Utils from './utils/helpers.js';
+
+
+
+File: src/utils/helpers.js
+==========================
+
+// helpers.js
+export function $(selector) {
+  return document.querySelector(selector);
+}
+
+export function $$(selector) {
+  return document.querySelectorAll(selector);
+}
+
+
+
+File: src/core/events.js
+========================
+
+// events.js
+// Store event listeners in a WeakMap to avoid memory leaks
+const eventListeners = new WeakMap();
+
+// Helper function to get or create listener array for a specific event type
+function getListeners(eventType) {
+  if (!eventListeners.has(document)) {
+    eventListeners.set(document, new Map());
+  }
+  const documentListeners = eventListeners.get(document);
+  
+  if (!documentListeners.has(eventType)) {
+    documentListeners.set(eventType, new Map());
+  }
+  
+  return documentListeners.get(eventType);
+}
+
+class EventError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'EventError';
+  }
+}
+
+export function on(eventType, selector, handler) {
+  try {
+    if (typeof eventType !== 'string') {
+      throw new EventError('Event type must be a string');
+    }
+    if (typeof selector !== 'string') {
+      throw new EventError('Selector must be a string');
+    }
+    if (typeof handler !== 'function') {
+      throw new EventError('Handler must be a function');
+    }
+
+    const eventListeners = getListeners(eventType);
+    
+    // Create a wrapped handler that checks the selector
+    const wrappedHandler = (event) => {
+      const matchingElement = event.target.closest(selector);
+      if (matchingElement) {
+        handler.call(matchingElement, event);
+      }
+    };
+    
+    // Store the handler info for potential removal later
+    eventListeners.set(handler, {
+      selector,
+      wrappedHandler
+    });
+    
+    // Add the event listener
+    document.addEventListener(eventType, wrappedHandler, true);
+  } catch (error) {
+    console.error('Error in on:', error);
+    throw error;
+  }
+}
+
+export function off(eventType, selector, handler) {
+  try {
+    if (typeof eventType !== 'string') {
+      throw new EventError('Event type must be a string');
+    }
+    if (typeof selector !== 'string') {
+      throw new EventError('Selector must be a string');
+    }
+    if (typeof handler !== 'function') {
+      throw new EventError('Handler must be a function');
+    }
+
+    const eventListeners = getListeners(eventType);
+    
+    // Find the stored handler info
+    const handlerInfo = eventListeners.get(handler);
+    
+    if (handlerInfo && handlerInfo.selector === selector) {
+      // Remove the event listener using the stored wrapped handler
+      document.removeEventListener(eventType, handlerInfo.wrappedHandler, true);
+      eventListeners.delete(handler);
+    }
+  } catch (error) {
+    console.error('Error in off:', error);
+    throw error;
+  }
+}
+
+export function emit(eventType, detail = {}) {
+  try {
+    if (typeof eventType !== 'string') {
+      throw new EventError('Event type must be a string');
+    }
+    if (typeof detail !== 'object') {
+      throw new EventError('Event detail must be an object');
+    }
+
+    const event = new CustomEvent(eventType, { detail });
+    document.dispatchEvent(event);
+  } catch (error) {
+    console.error('Error in emit:', error);
+    throw error;
+  }
+}
+
+
+
+File: src/core/state.js
+=======================
+
+// state.js
+// Deep equality comparison utility
+function deepEqual(obj1, obj2) {
+  if (obj1 === obj2) return true;
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
+  if (obj1 === null || obj2 === null) return false;
+  
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  
+  if (keys1.length !== keys2.length) return false;
+  
+  return keys1.every(key => {
+    if (!obj2.hasOwnProperty(key)) return false;
+    return deepEqual(obj1[key], obj2[key]);
+  });
+}
+
+// Get nested object value by path
+function getByPath(obj, path) {
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+}
+
+class StateError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'StateError';
+  }
+}
+
+export class Store {
+  constructor(initialState = {}) {
+    this.state = initialState;
+    this.listeners = new Set();
+  }
+
+  getState() {
+    return this.state;
+  }
+
+  setState(newState) {
+    const prevState = this.state;
+    this.state = { ...this.state, ...newState };
+    
+    // Immediately notify all listeners of the state change
+    this.listeners.forEach(listener => {
+      listener(this.state, prevState);
+    });
+  }
+
+  subscribe(listener) {
+    if (typeof listener !== 'function') {
+      throw new StateError('Listener must be a function');
+    }
+    
+    this.listeners.add(listener);
+    // Return unsubscribe function
+    return () => this.listeners.delete(listener);
+  }
+}
+
+
+
+File: src/core/router.js
+========================
+
+// router.js
+class RouterError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'RouterError';
+  }
+}
+
+export class Router {
+  constructor(routes) {
+    this.routes = routes;
+    this.currentRoute = null;
+    
+    window.addEventListener('hashchange', () => this.handleRoute());
+    window.addEventListener('load', () => this.handleRoute());
+  }
+
+  handleRoute() {
+    const hash = window.location.hash.slice(1) || '/';
+    const route = this.routes[hash] || this.routes['*'];
+    this.currentRoute = route;
+    route();
+  }
+}
+
+
+
+File: src/core/component.js
+===========================
+
+export class Component {
+    constructor(props = {}) {
+      this.props = props;
+      this.state = {};
+    }
+  
+    setState(newState) {
+      this.state = { ...this.state, ...newState };
+      this.render();
+    }
+  
+    render() {
+      throw new Error('Component must implement render method');
+    }
+  }
+
+
+File: src/core/dom.js
+=====================
+
+// dom.js
+// Types of patch operations
+const PATCH_TYPES = {
+  CREATE: 'CREATE',
+  REMOVE: 'REMOVE',
+  REPLACE: 'REPLACE',
+  UPDATE_ATTRS: 'UPDATE_ATTRS',
+  UPDATE_TEXT: 'UPDATE_TEXT'
+};
+
+class DOMError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'DOMError';
+  }
+}
+
+export function createElement(tag, attrs = {}, children = []) {
+  try {
+    if (!tag || typeof tag !== 'string') {
+      throw new DOMError('Tag must be a non-empty string');
+    }
+    if (typeof attrs !== 'object') {
+      throw new DOMError('Attributes must be an object');
+    }
+    if (!Array.isArray(children)) {
+      throw new DOMError('Children must be an array');
+    }
+    
+    const { key, ...restAttrs } = attrs;
+    return { tag, attrs: restAttrs, children, key };
+  } catch (error) {
+    console.error('Error in createElement:', error);
+    throw error;
+  }
+}
+
+export function render(newVdom, container) {
+  if (!container) {
+    console.error('Invalid container element');
+    return;
+  }
+  const oldVdom = container._vdom || null;
+  const patches = diff(oldVdom, newVdom);
+  applyPatches(container, patches);
+
+  container._vdom = newVdom;
+}
+
+function diff(oldVdom, newVdom) {
+  // Handle null/undefined cases first
+  if (oldVdom === null || oldVdom === undefined) {
+    return { type: PATCH_TYPES.CREATE, vdom: newVdom };
+  }
+  if (newVdom === null || newVdom === undefined) {
+    return { type: PATCH_TYPES.REMOVE };
+  }
+  
+  // Handle primitive values
+  if (typeof newVdom !== 'object' || !newVdom) {
+    if (oldVdom !== newVdom) {
+      return { type: PATCH_TYPES.UPDATE_TEXT, value: newVdom };
+    }
+    return null;
+  }
+
+  // Handle virtual DOM nodes
+  if (!oldVdom.tag || !newVdom.tag) {
+    return { type: PATCH_TYPES.REPLACE, vdom: newVdom };
+  }
+  if (oldVdom.tag !== newVdom.tag) {
+    return { type: PATCH_TYPES.REPLACE, vdom: newVdom };
+  }
+
+  const attrsPatch = diffAttrs(oldVdom.attrs || {}, newVdom.attrs || {});
+  const childrenPatch = diffChildren(
+    oldVdom.children || [], 
+    newVdom.children || []
+  );
+
+  if (!attrsPatch && !childrenPatch) {
+    return null;
+  }
+
+  return {
+    type: PATCH_TYPES.UPDATE_ATTRS,
+    attrs: attrsPatch,
+    children: childrenPatch,
+    vdom: newVdom
+  };
+}
+
+function diffAttrs(oldAttrs, newAttrs) {
+  const patches = {};
+  let hasChanges = false;
+
+  // Check for changed/new attributes
+  for (const [key, value] of Object.entries(newAttrs)) {
+    // Special handling for boolean attributes like 'checked'
+    if (key === 'checked' || key === 'selected' || key === 'disabled') {
+      if (!!oldAttrs[key] !== !!value) {
+        patches[key] = !!value;
+        hasChanges = true;
+      }
+    } else if (oldAttrs[key] !== value) {
+      patches[key] = value;
+      hasChanges = true;
+    }
+  }
+
+  // Check for removed attributes
+  for (const key in oldAttrs) {
+    if (!(key in newAttrs)) {
+      patches[key] = null;
+      hasChanges = true;
+    }
+  }
+
+  return hasChanges ? patches : null;
+}
+
+function diffChildren(oldChildren, newChildren) {
+  const patches = [];
+
+  newChildren.forEach((newChild, i) => {
+    const oldChild = oldChildren.find(child => 
+      child && child.key === newChild.key
+    );
+    
+    if (oldChild) {
+      const patch = diff(oldChild, newChild);
+      if (patch) {
+        patches[i] = patch;
+      }
+    } else {
+      patches[i] = { type: PATCH_TYPES.CREATE, vdom: newChild };
+    }
+  });
+
+  // Remove any children not in new list
+  oldChildren.forEach((oldChild, i) => {
+    if (oldChild && !newChildren.find(child => child.key === oldChild.key)) {
+      patches[i] = { type: PATCH_TYPES.REMOVE };
+    }
+  });
+
+  return patches.length > 0 ? { patches } : null;
+}
+
+function applyPatches(parent, patches, index = 0) {
+  if (!patches || !parent) return;
+
+  // Get the target node, accounting for text nodes
+  const getTargetNode = (parent, index) => {
+    const children = Array.from(parent.childNodes);
+    return children[index];
+  };
+
+  switch (patches.type) {
+    case PATCH_TYPES.CREATE: {
+      const element = _renderElement(patches.vdom);
+      parent.appendChild(element);
+      break;
+    }
+    case PATCH_TYPES.REMOVE: {
+      const node = getTargetNode(parent, index);
+      if (node) {
+        parent.removeChild(node);
+      }
+      break;
+    }
+    case PATCH_TYPES.REPLACE: {
+      const oldNode = getTargetNode(parent, index);
+      const newNode = _renderElement(patches.vdom);
+      if (oldNode) {
+        parent.replaceChild(newNode, oldNode);
+      } else {
+        parent.appendChild(newNode);
+      }
+      break;
+    }
+    case PATCH_TYPES.UPDATE_ATTRS: {
+      const element = getTargetNode(parent, index);
+      if (!element) return;
+      
+      // Update attributes
+      if (patches.attrs) {
+        for (const [attr, value] of Object.entries(patches.attrs)) {
+          if (value === null) {
+            element.removeAttribute(attr);
+          } else if (attr === 'checked' || attr === 'selected' || attr === 'disabled') {
+            if (value) {
+              element.setAttribute(attr, '');
+            } else {
+              element.removeAttribute(attr);
+            }
+          } else if (value === true) {
+            element.setAttribute(attr, '');
+          } else if (value !== false) {
+            element.setAttribute(attr, value.toString());
+          }
+        }
+      }
+
+      // Update children
+      if (patches.children && element.nodeType === Node.ELEMENT_NODE) {
+        // Handle moves first
+        if (patches.children.moves) {
+          patches.children.moves.forEach(({ from, to }) => {
+            const fromNode = element.childNodes[from];
+            const referenceNode = element.childNodes[to];
+            if (fromNode && referenceNode) {
+              element.insertBefore(fromNode, referenceNode);
+            }
+          });
+        }
+
+        // Apply patches to children
+        patches.children.patches.forEach((childPatch, i) => {
+          if (childPatch) {
+            applyPatches(element, childPatch, i);
+          }
+        });
+      }
+      break;
+    }
+    case PATCH_TYPES.UPDATE_TEXT: {
+      const textNode = getTargetNode(parent, index);
+      if (textNode) {
+        textNode.nodeValue = patches.value;
+      }
+      break;
+    }
+  }
+}
+
+function _renderElement(vdom) {
+  try {
+    if (vdom === null || vdom === undefined) {
+      return document.createTextNode('');
+    }
+    if (typeof vdom === 'string' || typeof vdom === 'number') {
+      return document.createTextNode(vdom.toString());
+    }
+    if (!vdom.tag) {
+      throw new DOMError('Invalid virtual DOM node');
+    }
+    
+    const { tag, attrs, children } = vdom;
+    const element = document.createElement(tag);
+
+    // Set attributes
+    for (const [attr, value] of Object.entries(attrs)) {
+      if (value === false || value === null || value === undefined) continue;
+      
+      // Handle boolean attributes specially
+      if (attr === 'checked' || attr === 'selected' || attr === 'disabled') {
+        if (value) {
+          element.setAttribute(attr, '');
+        } else {
+          element.removeAttribute(attr);
+        }
+      } else if (value === true) {
+        element.setAttribute(attr, '');
+      } else {
+        element.setAttribute(attr, value.toString());
+      }
+    }
+
+    // Append children
+    children.filter(child => child !== null && child !== undefined)
+      .forEach(child => {
+        element.appendChild(_renderElement(child));
+      });
+
+    return element;
+  } catch (error) {
+    console.error('Error in _renderElement:', error);
+    throw error;
+  }
+}
+
+
+
+File: .git/description
+======================
+
+Unnamed repository; edit this file 'description' to name the repository.
+
+
+
+File: .git/config
+=================
+
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = https://github.com/mohalnassery/mini-framework.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+	vscode-merge-base = origin/master
+
+
+
+File: .git/COMMIT_EDITMSG
+=========================
+
+Frontend done
+
+
+
+File: .git/packed-refs
+======================
+
+# pack-refs with: peeled fully-peeled sorted 
+4081cab3996358ea6266a6b20d2dc23f306c25fb refs/remotes/origin/master
+
+
+
+File: .git/HEAD
+===============
+
+ref: refs/heads/master
+
+
+
+File: .git/index
+================
+[Binary or unreadable file]
+
+
+File: .git/refs/remotes/origin/master
+=====================================
+
+4689b711c62b71165d2d3efc5efc7c4281127165
+
+
+
+File: .git/refs/remotes/origin/HEAD
+===================================
+
+ref: refs/remotes/origin/master
+
+
+
+File: .git/refs/heads/master
+============================
+
+4689b711c62b71165d2d3efc5efc7c4281127165
+
+
+
+File: .git/hooks/push-to-checkout.sample
+========================================
+
+#!/bin/sh
+
+# An example hook script to update a checked-out tree on a git push.
+#
+# This hook is invoked by git-receive-pack(1) when it reacts to git
+# push and updates reference(s) in its repository, and when the push
+# tries to update the branch that is currently checked out and the
+# receive.denyCurrentBranch configuration variable is set to
+# updateInstead.
+#
+# By default, such a push is refused if the working tree and the index
+# of the remote repository has any difference from the currently
+# checked out commit; when both the working tree and the index match
+# the current commit, they are updated to match the newly pushed tip
+# of the branch. This hook is to be used to override the default
+# behaviour; however the code below reimplements the default behaviour
+# as a starting point for convenient modification.
+#
+# The hook receives the commit with which the tip of the current
+# branch is going to be updated:
+commit=$1
+
+# It can exit with a non-zero status to refuse the push (when it does
+# so, it must not modify the index or the working tree).
+die () {
+	echo >&2 "$*"
+	exit 1
+}
+
+# Or it can make any necessary changes to the working tree and to the
+# index to bring them to the desired state when the tip of the current
+# branch is updated to the new commit, and exit with a zero status.
+#
+# For example, the hook can simply run git read-tree -u -m HEAD "$1"
+# in order to emulate git fetch that is run in the reverse direction
+# with git push, as the two-tree form of git read-tree -u -m is
+# essentially the same as git switch or git checkout that switches
+# branches while keeping the local changes in the working tree that do
+# not interfere with the difference between the branches.
+
+# The below is a more-or-less exact translation to shell of the C code
+# for the default behaviour for git's push-to-checkout hook defined in
+# the push_to_deploy() function in builtin/receive-pack.c.
+#
+# Note that the hook will be executed from the repository directory,
+# not from the working tree, so if you want to perform operations on
+# the working tree, you will have to adapt your code accordingly, e.g.
+# by adding "cd .." or using relative paths.
+
+if ! git update-index -q --ignore-submodules --refresh
+then
+	die "Up-to-date check failed"
+fi
+
+if ! git diff-files --quiet --ignore-submodules --
+then
+	die "Working directory has unstaged changes"
+fi
+
+# This is a rough translation of:
+#
+#   head_has_history() ? "HEAD" : EMPTY_TREE_SHA1_HEX
+if git cat-file -e HEAD 2>/dev/null
+then
+	head=HEAD
+else
+	head=$(git hash-object -t tree --stdin </dev/null)
+fi
+
+if ! git diff-index --quiet --cached --ignore-submodules $head --
+then
+	die "Working directory has staged changes"
+fi
+
+if ! git read-tree -u -m "$commit"
+then
+	die "Could not update working tree to new HEAD"
+fi
+
+
+
+File: .git/hooks/applypatch-msg.sample
+======================================
+
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
+
+. git-sh-setup
+commitmsg="$(git rev-parse --git-path hooks/commit-msg)"
+test -x "$commitmsg" && exec "$commitmsg" ${1+"$@"}
+:
+
+
+
+File: .git/hooks/prepare-commit-msg.sample
+==========================================
+
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
+
+# This hook includes three examples. The first one removes the
+# "# Please enter the commit message..." help message.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+/usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+
+# case "$COMMIT_SOURCE,$SHA1" in
+#  ,|template,)
+#    /usr/bin/perl -i.bak -pe '
+#       print "\n" . `git diff --cached --name-status -r`
+# 	 if /^#/ && $first++ == 0' "$COMMIT_MSG_FILE" ;;
+#  *) ;;
+# esac
+
+# SOB=$(git var GIT_COMMITTER_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# git interpret-trailers --in-place --trailer "$SOB" "$COMMIT_MSG_FILE"
+# if test -z "$COMMIT_SOURCE"
+# then
+#   /usr/bin/perl -i.bak -pe 'print "\n" if !$first_line++' "$COMMIT_MSG_FILE"
+# fi
+
+
+
+File: .git/hooks/pre-rebase.sample
+==================================
+
+#!/bin/sh
+#
+# Copyright (c) 2006, 2008 Junio C Hamano
+#
+# The "pre-rebase" hook is run just before "git rebase" starts doing
+# its job, and can prevent the command from running by exiting with
+# non-zero status.
+#
+# The hook is called with the following parameters:
+#
+# $1 -- the upstream the series was forked from.
+# $2 -- the branch being rebased (or empty when rebasing the current branch).
+#
+# This sample shows how to prevent topic branches that are already
+# merged to 'next' branch from getting rebased, because allowing it
+# would result in rebasing already published history.
+
+publish=next
+basebranch="$1"
+if test "$#" = 2
+then
+	topic="refs/heads/$2"
+else
+	topic=`git symbolic-ref HEAD` ||
+	exit 0 ;# we do not interrupt rebasing detached HEAD
+fi
+
+case "$topic" in
+refs/heads/??/*)
+	;;
+*)
+	exit 0 ;# we do not interrupt others.
+	;;
+esac
+
+# Now we are dealing with a topic branch being rebased
+# on top of master.  Is it OK to rebase it?
+
+# Does the topic really exist?
+git show-ref -q "$topic" || {
+	echo >&2 "No such branch $topic"
+	exit 1
+}
+
+# Is topic fully merged to master?
+not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
+if test -z "$not_in_master"
+then
+	echo >&2 "$topic is fully merged to master; better remove it."
+	exit 1 ;# we could allow it, but there is no point.
+fi
+
+# Is topic ever merged to next?  If so you should not be rebasing it.
+only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
+only_next_2=`git rev-list ^master           ${publish} | sort`
+if test "$only_next_1" = "$only_next_2"
+then
+	not_in_topic=`git rev-list "^$topic" master`
+	if test -z "$not_in_topic"
+	then
+		echo >&2 "$topic is already up to date with master"
+		exit 1 ;# we could allow it, but there is no point.
+	else
+		exit 0
+	fi
+else
+	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
+	/usr/bin/perl -e '
+		my $topic = $ARGV[0];
+		my $msg = "* $topic has commits already merged to public branch:\n";
+		my (%not_in_next) = map {
+			/^([0-9a-f]+) /;
+			($1 => 1);
+		} split(/\n/, $ARGV[1]);
+		for my $elem (map {
+				/^([0-9a-f]+) (.*)$/;
+				[$1 => $2];
+			} split(/\n/, $ARGV[2])) {
+			if (!exists $not_in_next{$elem->[0]}) {
+				if ($msg) {
+					print STDERR $msg;
+					undef $msg;
+				}
+				print STDERR " $elem->[1]\n";
+			}
+		}
+	' "$topic" "$not_in_next" "$not_in_master"
+	exit 1
+fi
+
+<<\DOC_END
+
+This sample hook safeguards topic branches that have been
+published from being rewound.
+
+The workflow assumed here is:
+
+ * Once a topic branch forks from "master", "master" is never
+   merged into it again (either directly or indirectly).
+
+ * Once a topic branch is fully cooked and merged into "master",
+   it is deleted.  If you need to build on top of it to correct
+   earlier mistakes, a new topic branch is created by forking at
+   the tip of the "master".  This is not strictly necessary, but
+   it makes it easier to keep your history simple.
+
+ * Whenever you need to test or publish your changes to topic
+   branches, merge them into "next" branch.
+
+The script, being an example, hardcodes the publish branch name
+to be "next", but it is trivial to make it configurable via
+$GIT_DIR/config mechanism.
+
+With this workflow, you would want to know:
+
+(1) ... if a topic branch has ever been merged to "next".  Young
+    topic branches can have stupid mistakes you would rather
+    clean up before publishing, and things that have not been
+    merged into other branches can be easily rebased without
+    affecting other people.  But once it is published, you would
+    not want to rewind it.
+
+(2) ... if a topic branch has been fully merged to "master".
+    Then you can delete it.  More importantly, you should not
+    build on top of it -- other people may already want to
+    change things related to the topic as patches against your
+    "master", so if you need further changes, it is better to
+    fork the topic (perhaps with the same name) afresh from the
+    tip of "master".
+
+Let's look at this example:
+
+		   o---o---o---o---o---o---o---o---o---o "next"
+		  /       /           /           /
+		 /   a---a---b A     /           /
+		/   /               /           /
+	       /   /   c---c---c---c B         /
+	      /   /   /             \         /
+	     /   /   /   b---b C     \       /
+	    /   /   /   /             \     /
+    ---o---o---o---o---o---o---o---o---o---o---o "master"
+
+
+A, B and C are topic branches.
+
+ * A has one fix since it was merged up to "next".
+
+ * B has finished.  It has been fully merged up to "master" and "next",
+   and is ready to be deleted.
+
+ * C has not merged to "next" at all.
+
+We would want to allow C to be rebased, refuse A, and encourage
+B to be deleted.
+
+To compute (1):
+
+	git rev-list ^master ^topic next
+	git rev-list ^master        next
+
+	if these match, topic has not merged in next at all.
+
+To compute (2):
+
+	git rev-list master..topic
+
+	if this is empty, it is fully merged to "master".
+
+DOC_END
+
+
+
+File: .git/hooks/pre-applypatch.sample
+======================================
+
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
+
+. git-sh-setup
+precommit="$(git rev-parse --git-path hooks/pre-commit)"
+test -x "$precommit" && exec "$precommit" ${1+"$@"}
+:
+
+
+
+File: .git/hooks/pre-push.sample
+================================
+
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local oid> <remote ref> <remote oid>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
+
+remote="$1"
+url="$2"
+
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+
+while read local_ref local_oid remote_ref remote_oid
+do
+	if test "$local_oid" = "$zero"
+	then
+		# Handle delete
+		:
+	else
+		if test "$remote_oid" = "$zero"
+		then
+			# New branch, examine all commits
+			range="$local_oid"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_oid..$local_oid"
+		fi
+
+		# Check for WIP commit
+		commit=$(git rev-list -n 1 --grep '^WIP' "$range")
+		if test -n "$commit"
+		then
+			echo >&2 "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
+
+exit 0
+
+
+
+File: .git/hooks/pre-merge-commit.sample
+========================================
+
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git merge" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message to
+# stderr if it wants to stop the merge commit.
+#
+# To enable this hook, rename this file to "pre-merge-commit".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+        exec "$GIT_DIR/hooks/pre-commit"
+:
+
+
+
+File: .git/hooks/pre-commit.sample
+==================================
+
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=$(git hash-object -t tree /dev/null)
+fi
+
+# If you want to allow non-ASCII filenames set this variable to true.
+allownonascii=$(git config --type=bool hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Cross platform projects tend to avoid non-ASCII filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	cat <<\EOF
+Error: Attempt to add a non-ASCII file name.
+
+This can cause problems if you want to work with people on other platforms.
+
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+
+  git config hooks.allownonascii true
+EOF
+	exit 1
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --
+
+
+
+File: .git/hooks/post-update.sample
+===================================
+
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
+
+exec git update-server-info
+
+
+
+File: .git/hooks/update.sample
+==============================
+
+#!/bin/sh
+#
+# An example hook script to block unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --type=bool hooks.allowunannotated)
+allowdeletebranch=$(git config --type=bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --type=bool hooks.denycreatebranch)
+allowdeletetag=$(git config --type=bool hooks.allowdeletetag)
+allowmodifytag=$(git config --type=bool hooks.allowmodifytag)
+
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0
+
+
+
+File: .git/hooks/pre-receive.sample
+===================================
+
+#!/bin/sh
+#
+# An example hook script to make use of push options.
+# The example simply echoes all push options that start with 'echoback='
+# and rejects all pushes when the "reject" push option is used.
+#
+# To enable this hook, rename this file to "pre-receive".
+
+if test -n "$GIT_PUSH_OPTION_COUNT"
+then
+	i=0
+	while test "$i" -lt "$GIT_PUSH_OPTION_COUNT"
+	do
+		eval "value=\$GIT_PUSH_OPTION_$i"
+		case "$value" in
+		echoback=*)
+			echo "echo from the pre-receive-hook: ${value#*=}" >&2
+			;;
+		reject)
+			exit 1
+		esac
+		i=$((i + 1))
+	done
+fi
+
+
+
+File: .git/hooks/fsmonitor-watchman.sample
+==========================================
+
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use IPC::Open2;
+
+# An example hook script to integrate Watchman
+# (https://facebook.github.io/watchman/) with git to speed up detecting
+# new and modified files.
+#
+# The hook is passed a version (currently 2) and last update token
+# formatted as a string and outputs to stdout a new update token and
+# all files that have been modified since the update token. Paths must
+# be relative to the root of the working tree and separated by a single NUL.
+#
+# To enable this hook, rename this file to "query-watchman" and set
+# 'git config core.fsmonitor .git/hooks/query-watchman'
+#
+my ($version, $last_update_token) = @ARGV;
+
+# Uncomment for debugging
+# print STDERR "$0 $version $last_update_token\n";
+
+# Check the hook interface version
+if ($version ne 2) {
+	die "Unsupported query-fsmonitor hook version '$version'.\n" .
+	    "Falling back to scanning...\n";
+}
+
+my $git_work_tree = get_working_dir();
+
+my $retry = 1;
+
+my $json_pkg;
+eval {
+	require JSON::XS;
+	$json_pkg = "JSON::XS";
+	1;
+} or do {
+	require JSON::PP;
+	$json_pkg = "JSON::PP";
+};
+
+launch_watchman();
+
+sub launch_watchman {
+	my $o = watchman_query();
+	if (is_work_tree_watched($o)) {
+		output_result($o->{clock}, @{$o->{files}});
+	}
+}
+
+sub output_result {
+	my ($clockid, @files) = @_;
+
+	# Uncomment for debugging watchman output
+	# open (my $fh, ">", ".git/watchman-output.out");
+	# binmode $fh, ":utf8";
+	# print $fh "$clockid\n@files\n";
+	# close $fh;
+
+	binmode STDOUT, ":utf8";
+	print $clockid;
+	print "\0";
+	local $, = "\0";
+	print @files;
+}
+
+sub watchman_clock {
+	my $response = qx/watchman clock "$git_work_tree"/;
+	die "Failed to get clock id on '$git_work_tree'.\n" .
+		"Falling back to scanning...\n" if $? != 0;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub watchman_query {
+	my $pid = open2(\*CHLD_OUT, \*CHLD_IN, 'watchman -j --no-pretty')
+	or die "open2() failed: $!\n" .
+	"Falling back to scanning...\n";
+
+	# In the query expression below we're asking for names of files that
+	# changed since $last_update_token but not from the .git folder.
+	#
+	# To accomplish this, we're using the "since" generator to use the
+	# recency index to select candidate nodes and "fields" to limit the
+	# output to file names only. Then we're using the "expression" term to
+	# further constrain the results.
+	if (substr($last_update_token, 0, 1) eq "c") {
+		$last_update_token = "\"$last_update_token\"";
+	}
+	my $query = <<"	END";
+		["query", "$git_work_tree", {
+			"since": $last_update_token,
+			"fields": ["name"],
+			"expression": ["not", ["dirname", ".git"]]
+		}]
+	END
+
+	# Uncomment for debugging the watchman query
+	# open (my $fh, ">", ".git/watchman-query.json");
+	# print $fh $query;
+	# close $fh;
+
+	print CHLD_IN $query;
+	close CHLD_IN;
+	my $response = do {local $/; <CHLD_OUT>};
+
+	# Uncomment for debugging the watch response
+	# open ($fh, ">", ".git/watchman-response.json");
+	# print $fh $response;
+	# close $fh;
+
+	die "Watchman: command returned no output.\n" .
+	"Falling back to scanning...\n" if $response eq "";
+	die "Watchman: command returned invalid output: $response\n" .
+	"Falling back to scanning...\n" unless $response =~ /^\{/;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub is_work_tree_watched {
+	my ($output) = @_;
+	my $error = $output->{error};
+	if ($retry > 0 and $error and $error =~ m/unable to resolve root .* directory (.*) is not watched/) {
+		$retry--;
+		my $response = qx/watchman watch "$git_work_tree"/;
+		die "Failed to make watchman watch '$git_work_tree'.\n" .
+		    "Falling back to scanning...\n" if $? != 0;
+		$output = $json_pkg->new->utf8->decode($response);
+		$error = $output->{error};
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		# Uncomment for debugging watchman output
+		# open (my $fh, ">", ".git/watchman-output.out");
+		# close $fh;
+
+		# Watchman will always return all files on the first query so
+		# return the fast "everything is dirty" flag to git and do the
+		# Watchman query just to get it over with now so we won't pay
+		# the cost in git to look up each individual file.
+		my $o = watchman_clock();
+		$error = $output->{error};
+
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		output_result($o->{clock}, ("/"));
+		$last_update_token = $o->{clock};
+
+		eval { launch_watchman() };
+		return 0;
+	}
+
+	die "Watchman: $error.\n" .
+	"Falling back to scanning...\n" if $error;
+
+	return 1;
+}
+
+sub get_working_dir {
+	my $working_dir;
+	if ($^O =~ 'msys' || $^O =~ 'cygwin') {
+		$working_dir = Win32::GetCwd();
+		$working_dir =~ tr/\\/\//;
+	} else {
+		require Cwd;
+		$working_dir = Cwd::cwd();
+	}
+
+	return $working_dir;
+}
+
+
+
+File: .git/hooks/commit-msg.sample
+==================================
+
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}
+
+
+
+File: .git/logs/HEAD
+====================
+
+0000000000000000000000000000000000000000 4081cab3996358ea6266a6b20d2dc23f306c25fb faawadhi <fatemaya@hotmail.com> 1732027083 +0300	clone: from https://github.com/mohalnassery/mini-framework.git
+4081cab3996358ea6266a6b20d2dc23f306c25fb 4689b711c62b71165d2d3efc5efc7c4281127165 faawadhi <fatemaya@hotmail.com> 1732029329 +0300	commit: Frontend done
+
+
+
+File: .git/logs/refs/remotes/origin/master
+==========================================
+
+4081cab3996358ea6266a6b20d2dc23f306c25fb 4689b711c62b71165d2d3efc5efc7c4281127165 faawadhi <fatemaya@hotmail.com> 1732029335 +0300	update by push
+
+
+
+File: .git/logs/refs/remotes/origin/HEAD
+========================================
+
+0000000000000000000000000000000000000000 4081cab3996358ea6266a6b20d2dc23f306c25fb faawadhi <fatemaya@hotmail.com> 1732027083 +0300	clone: from https://github.com/mohalnassery/mini-framework.git
+
+
+
+File: .git/logs/refs/heads/master
+=================================
+
+0000000000000000000000000000000000000000 4081cab3996358ea6266a6b20d2dc23f306c25fb faawadhi <fatemaya@hotmail.com> 1732027083 +0300	clone: from https://github.com/mohalnassery/mini-framework.git
+4081cab3996358ea6266a6b20d2dc23f306c25fb 4689b711c62b71165d2d3efc5efc7c4281127165 faawadhi <fatemaya@hotmail.com> 1732029329 +0300	commit: Frontend done
+
+
+
+File: .git/info/exclude
+=======================
+
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+
+
+File: .git/objects/pack/pack-39e397d1bfd3670daf652817a7fc77e04ed9dfa0.pack
+==========================================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/pack/pack-39e397d1bfd3670daf652817a7fc77e04ed9dfa0.idx
+=========================================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/61/5cc2fe4f8ab2e76200022e598153b74bfd2d81
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/7f/50c2d09af9d9529afcc134cd00278762d1959a
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/3a/3d4109fd764769ce05a37e4d1e3cd4f537d409
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/46/89b711c62b71165d2d3efc5efc7c4281127165
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/8d/8f6e9507048110196e612c999534435ce2d0a3
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/50/a24372e66353dc716f36f14e8be8e30bb26867
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/88/e731f54e1777bd08a31ef195360721be3d3dbb
+============================================================
+[Binary or unreadable file]
+
+
+File: .git/objects/b1/7b15637e23d38fad2761695396aced257ff72c
+============================================================
+[Binary or unreadable file]
+
