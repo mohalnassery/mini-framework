@@ -118,7 +118,6 @@ function toggleTodoCompletion(id) {
 function deleteTodo(id) {
   const todos = store.getState().todos.filter(todo => todo.id !== id);
   store.setState({ todos, lastChangedProp: 'todos' });
-  renderApp(store.getState());
 }
 
 function clearCompletedTodos() {
@@ -158,7 +157,6 @@ function finishEditing(event) {
 
 // Filter functions
 function getFilteredTodos(todos, filter) {
-  console.log('Filtering todos:', todos, 'with filter:', filter);
   switch (filter) {
     case 'active':
       return todos.filter(todo => !todo.completed);
@@ -192,7 +190,7 @@ function updateFilterUI(currentFilter) {
 function renderApp(state) {
   const filteredTodos = getFilteredTodos(state.todos, state.filter);
   const remainingTasks = state.todos.filter(todo => !todo.completed).length;
-  const taskText = `${remainingTasks} ${remainingTasks === 1 || remainingTasks === 0 ? 'task' : 'tasks'} left`;
+  const taskText = `${remainingTasks} ${remainingTasks === 1 ? 'task' : 'tasks'} left`;
 
   const appContent = createElement('div', { class: 'todoapp' }, [
     new Header({ onNewTodo: addTodo }).render(),
@@ -266,11 +264,11 @@ function initApp() {
   store.subscribe((state) => {
     if (state.lastChangedProp === 'todos') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.todos));
+      // Force a fresh render with the latest state
+      window.requestAnimationFrame(() => {
+        renderApp(store.getState());  // This will render with the updated count
+      });
     }
-    // Use requestAnimationFrame for smooth rendering
-    window.requestAnimationFrame(() => {
-      renderApp(state);
-    });
   });
 
   // Setup routing

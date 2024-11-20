@@ -41,6 +41,8 @@ export function render(newVdom, container) {
     return;
   }
   const oldVdom = container._vdom || null;
+  console.log("oldVdom", oldVdom);
+  console.log("newVdom", newVdom);
   const patches = diff(oldVdom, newVdom);
   applyPatches(container, patches);
 
@@ -56,8 +58,8 @@ function diff(oldVdom, newVdom) {
     return { type: PATCH_TYPES.REMOVE };
   }
   
-  // Handle primitive values
-  if (typeof newVdom !== 'object' || !newVdom) {
+  // Handle primitive values (text nodes)
+  if (typeof newVdom !== 'object' || typeof oldVdom !== 'object') {
     if (oldVdom !== newVdom) {
       return { type: PATCH_TYPES.UPDATE_TEXT, value: newVdom };
     }
@@ -126,6 +128,12 @@ function diffChildren(oldChildren, newChildren) {
   const safeOldChildren = (oldChildren || []).filter(child => child != null);
   const safeNewChildren = (newChildren || []).filter(child => child != null);
 
+  console.log("safeold", safeOldChildren);
+  console.log("safenew", safeNewChildren);
+
+  // Check if we're dealing with keyed children
+  const hasKeys = safeOldChildren.some(child => child && child.key != null);
+
   safeNewChildren.forEach((newChild, i) => {
     // Skip null children
     if (!newChild) return;
@@ -133,7 +141,7 @@ function diffChildren(oldChildren, newChildren) {
     const oldChild = safeOldChildren.find(child => 
       child && child.key === (newChild && newChild.key)
     );
-    
+
     if (oldChild) {
       const patch = diff(oldChild, newChild);
       if (patch) {
@@ -144,13 +152,36 @@ function diffChildren(oldChildren, newChildren) {
     }
   });
 
-  // Remove any children not in new list
-  safeOldChildren.forEach((oldChild, i) => {
-    if (oldChild && !safeNewChildren.find(child => child && child.key === oldChild.key)) {
-      patches[i] = { type: PATCH_TYPES.REMOVE };
+  // Special removal handling for keyed elements
+  if (hasKeys) {
+    const seenIndices = new Set();
+    
+    // Mark which old indices are still in use
+    safeNewChildren.forEach(newChild => {
+      const oldIndex = safeOldChildren.findIndex(oldChild => 
+        oldChild && oldChild.key === newChild.key
+      );
+      if (oldIndex !== -1) {
+        seenIndices.add(oldIndex);
+      }
+    });
+
+    // Remove any unseen indices
+    safeOldChildren.forEach((oldChild, oldIndex) => {
+      if (!seenIndices.has(oldIndex)) {
+        patches[oldIndex] = { type: PATCH_TYPES.REMOVE };
+      }
+    });
+  }
+
+  // Handle removal of non-keyed elements
+  safeOldChildren.forEach((oldChild, oldIndex) => {
+    if (!safeNewChildren[oldIndex] && !oldChild.key) {
+      patches[oldIndex] = { type: PATCH_TYPES.REMOVE };
     }
   });
 
+  console.log(patches);
   return patches.length > 0 ? { patches } : null;
 }
 
@@ -211,17 +242,7 @@ function applyPatches(parent, patches, index = 0) {
 
       // Update children
       if (patches.children && element.nodeType === Node.ELEMENT_NODE) {
-        // Handle moves first
-        if (patches.children.moves) {
-          patches.children.moves.forEach(({ from, to }) => {
-            const fromNode = element.childNodes[from];
-            const referenceNode = element.childNodes[to];
-            if (fromNode && referenceNode) {
-              element.insertBefore(fromNode, referenceNode);
-            }
-          });
-        }
-
+        
         // Apply patches to children
         patches.children.patches.forEach((childPatch, i) => {
           if (childPatch) {
