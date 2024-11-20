@@ -74,6 +74,11 @@ function diff(oldVdom, newVdom) {
     return { type: PATCH_TYPES.REPLACE, vdom: newVdom };
   }
 
+  // If newVdom is falsy (like false), remove the element
+  if (!newVdom) {
+    return { type: PATCH_TYPES.REMOVE };
+  }
+
   const attrsPatch = diffAttrs(oldVdom.attrs || {}, newVdom.attrs || {});
   const childrenPatch = diffChildren(
     oldVdom.children || [], 
@@ -131,8 +136,20 @@ function diffChildren(oldChildren, newChildren) {
   console.log("safeold", safeOldChildren);
   console.log("safenew", safeNewChildren);
 
+  // If all children are removed, mark the parent for removal
+  if (safeOldChildren.length > 0 && safeNewChildren.length === 0) {
+    return { type: PATCH_TYPES.REMOVE };
+  }
+
+  // If all children are removed, mark the parent for removal
+  if (safeNewChildren.length > 0 && safeOldChildren.length === 0) {
+    return { type: PATCH_TYPES.CREATE, vdom: newChildren };
+  }
+
   // Check if we're dealing with keyed children
-  const hasKeys = safeOldChildren.some(child => child && child.key != null);
+  const hasKeys = safeOldChildren.some(child => 
+    child && child.key != null
+  );
 
   safeNewChildren.forEach((newChild, i) => {
     // Skip null children
@@ -209,11 +226,17 @@ function applyPatches(parent, patches, index = 0) {
     }
     case PATCH_TYPES.REPLACE: {
       const oldNode = getTargetNode(parent, index);
-      const newNode = _renderElement(patches.vdom);
-      if (oldNode) {
-        parent.replaceChild(newNode, oldNode);
+      if (patches.vdom === null || patches.vdom === false) {
+        if (oldNode) {
+          parent.removeChild(oldNode);
+        }
       } else {
-        parent.appendChild(newNode);
+        const newNode = _renderElement(patches.vdom);
+        if (oldNode) {
+          parent.replaceChild(newNode, oldNode);
+        } else {
+          parent.appendChild(newNode);
+        }
       }
       break;
     }
@@ -242,13 +265,19 @@ function applyPatches(parent, patches, index = 0) {
 
       // Update children
       if (patches.children && element.nodeType === Node.ELEMENT_NODE) {
-        
-        // Apply patches to children
-        patches.children.patches.forEach((childPatch, i) => {
-          if (childPatch) {
-            applyPatches(element, childPatch, i);
+        if (patches.children.type === PATCH_TYPES.REMOVE) {
+          // If children patch is a REMOVE type, remove all children
+          while (element.firstChild) {
+            element.removeChild(element.firstChild);
           }
-        });
+        } else if (patches.children.patches) {
+          // Apply patches to children
+          patches.children.patches.forEach((childPatch, i) => {
+            if (childPatch) {
+              applyPatches(element, childPatch, i);
+            }
+          });
+        }
       }
       break;
     }

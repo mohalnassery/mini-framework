@@ -194,7 +194,7 @@ function renderApp(state) {
 
   const appContent = createElement('div', { class: 'todoapp' }, [
     new Header({ onNewTodo: addTodo }).render(),
-    state.todos.length > 0 && createElement('section', { class: 'main' }, [
+    createElement('section', { class: 'main', style: state.todos.length === 0 ? 'display: none' : '' }, [
       // Create a container div for controls
       createElement('div', { class: 'main-controls' }, [
         // Clear completed button
@@ -216,8 +216,10 @@ function renderApp(state) {
         }
       }).render()
     ]),
-    // Only show footer when there are todos
-    state.todos.length > 0 && createElement('footer', { class: 'footer' }, [
+    createElement('footer', { 
+      class: 'footer',
+      style: state.todos.length === 0 ? 'display: none' : ''
+    }, [
       // Toggle all container
       createElement('div', { class: 'toggle-all-container' }, [
         createElement('input', {
@@ -234,7 +236,7 @@ function renderApp(state) {
         createElement('p', {}, [taskText])
       ]),
     ])
-  ].filter(Boolean)); // Filter out falsy values
+  ]);
 
   const appContainer = document.getElementById('app');
   render(appContent, appContainer);
@@ -308,4 +310,3 @@ if (document.readyState === 'loading') {
 } else {
   initApp();
 }
-
