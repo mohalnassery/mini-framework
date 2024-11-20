@@ -41,8 +41,6 @@ export function render(newVdom, container) {
     return;
   }
   const oldVdom = container._vdom || null;
-  console.log("oldVdom", oldVdom);
-  console.log("newVdom", newVdom);
   const patches = diff(oldVdom, newVdom);
   applyPatches(container, patches);
 
@@ -54,7 +52,7 @@ function diff(oldVdom, newVdom) {
   if (oldVdom === null || oldVdom === undefined) {
     return { type: PATCH_TYPES.CREATE, vdom: newVdom };
   }
-  if (newVdom === null || newVdom === undefined) {
+  if (newVdom === null || newVdom === undefined || !newVdom) {
     return { type: PATCH_TYPES.REMOVE };
   }
   
@@ -67,16 +65,8 @@ function diff(oldVdom, newVdom) {
   }
 
   // Handle virtual DOM nodes
-  if (!oldVdom.tag || !newVdom.tag) {
+  if (!oldVdom.tag || !newVdom.tag || oldVdom.tag !== newVdom.tag) {
     return { type: PATCH_TYPES.REPLACE, vdom: newVdom };
-  }
-  if (oldVdom.tag !== newVdom.tag) {
-    return { type: PATCH_TYPES.REPLACE, vdom: newVdom };
-  }
-
-  // If newVdom is falsy (like false), remove the element
-  if (!newVdom) {
-    return { type: PATCH_TYPES.REMOVE };
   }
 
   const attrsPatch = diffAttrs(oldVdom.attrs || {}, newVdom.attrs || {});
@@ -133,9 +123,6 @@ function diffChildren(oldChildren, newChildren) {
   const safeOldChildren = (oldChildren || []).filter(child => child != null);
   const safeNewChildren = (newChildren || []).filter(child => child != null);
 
-  console.log("safeold", safeOldChildren);
-  console.log("safenew", safeNewChildren);
-
   // If all children are removed, mark the parent for removal
   if (safeOldChildren.length > 0 && safeNewChildren.length === 0) {
     return { type: PATCH_TYPES.REMOVE };
@@ -184,7 +171,7 @@ function diffChildren(oldChildren, newChildren) {
     });
 
     // Remove any unseen indices
-    safeOldChildren.forEach((oldChild, oldIndex) => {
+    safeOldChildren.forEach((_, oldIndex) => {
       if (!seenIndices.has(oldIndex)) {
         patches[oldIndex] = { type: PATCH_TYPES.REMOVE };
       }
@@ -198,7 +185,6 @@ function diffChildren(oldChildren, newChildren) {
     }
   });
 
-  console.log(patches);
   return patches.length > 0 ? { patches } : null;
 }
 
